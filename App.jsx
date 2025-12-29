@@ -27,14 +27,16 @@ const App = () => {
   useEffect(() => {
     const handleScroll = () => {
       const nav = document.getElementById('navbar');
-      if (window.scrollY > 50) {
-        nav.classList.add('shadow-lg');
-        nav.style.background = 'rgba(5, 5, 5, 0.7)';
-        nav.style.backdropFilter = 'blur(20px)';
-      } else {
-        nav.classList.remove('shadow-lg');
-        nav.style.background = 'rgba(5, 5, 5, 0.3)';
-        nav.style.backdropFilter = 'blur(10px)';
+      if (nav) {
+        if (window.scrollY > 50) {
+          nav.classList.add('shadow-lg');
+          nav.style.background = 'rgba(5, 5, 5, 0.7)';
+          nav.style.backdropFilter = 'blur(20px)';
+        } else {
+          nav.classList.remove('shadow-lg');
+          nav.style.background = 'rgba(5, 5, 5, 0.3)';
+          nav.style.backdropFilter = 'blur(10px)';
+        }
       }
     };
 
@@ -45,6 +47,8 @@ const App = () => {
   // Canvas Particle Animation
   useEffect(() => {
     const canvas = document.getElementById('hero-canvas');
+    if (!canvas) return;
+    
     const ctx = canvas.getContext('2d');
     let width, height;
     let particles = [];
@@ -131,14 +135,26 @@ const App = () => {
   }, []);
 
   return (
-    <div className="antialiased selection:bg-primary selection:text-black">
+    <div className="antialiased selection:bg-primary selection:text-black font-sans text-gray-100 bg-dark">
       {/* Navigation */}
       <nav className="fixed w-full z-50 nav-glass transition-all duration-300" id="navbar">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             <div className="flex-shrink-0">
               <a href="#" className="flex items-center gap-2">
-                 <img src="lumima_logo_website.png" alt="XLARGI Logo" className="h-10 w-auto" />
+                 <img 
+                   src="lumima_logo_website.png" 
+                   alt="XLARGI Logo" 
+                   className="h-10 w-auto"
+                   onError={(e) => {
+                     e.target.onerror = null; 
+                     e.target.style.display = 'none';
+                     e.target.nextSibling.style.display = 'block';
+                   }}
+                 />
+                 <span className="text-2xl font-bold tracking-tighter text-white hidden">
+                    XLARGI<span className="text-primary">.</span>
+                 </span>
               </a>
             </div>
             <div className="hidden md:block">
@@ -157,7 +173,7 @@ const App = () => {
             <div className="-mr-2 flex md:hidden">
               <button type="button" className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 focus:outline-none" onClick={() => document.getElementById('mobile-menu').classList.toggle('hidden')}>
                 <span className="sr-only">Open main menu</span>
-                <i className="fas fa-bars text-xl"></i>
+                <i className="fa-solid fa-bars text-xl"></i>
               </button>
             </div>
           </div>
@@ -220,12 +236,12 @@ const App = () => {
           <div className="mt-20 pt-10 border-t border-white/5 backdrop-blur-[2px]">
             <p className="text-sm text-gray-500 uppercase tracking-widest mb-6 font-semibold">Powering Next-Gen Solutions With</p>
             <div className="flex flex-wrap justify-center gap-8 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-              <i className="fab fa-unity text-4xl hover:text-white transition-colors" title="Unity"></i>
-              <i className="fab fa-react text-4xl hover:text-[#61DAFB] transition-colors" title="React"></i>
-              <i className="fab fa-angular text-4xl hover:text-[#DD0031] transition-colors" title="Angular"></i>
-              <i className="fab fa-python text-4xl hover:text-[#3776AB] transition-colors" title="Python"></i>
-              <i className="fab fa-aws text-4xl hover:text-[#FF9900] transition-colors" title="AWS"></i>
-              <i className="fab fa-node text-4xl hover:text-[#339933] transition-colors" title="Node.js"></i>
+              <i className="fa-brands fa-unity text-4xl hover:text-white transition-colors" title="Unity"></i>
+              <i className="fa-brands fa-react text-4xl hover:text-[#61DAFB] transition-colors" title="React"></i>
+              <i className="fa-brands fa-angular text-4xl hover:text-[#DD0031] transition-colors" title="Angular"></i>
+              <i className="fa-brands fa-python text-4xl hover:text-[#3776AB] transition-colors" title="Python"></i>
+              <i className="fa-brands fa-aws text-4xl hover:text-[#FF9900] transition-colors" title="AWS"></i>
+              <i className="fa-brands fa-node text-4xl hover:text-[#339933] transition-colors" title="Node.js"></i>
             </div>
           </div>
         </div>
@@ -236,23 +252,35 @@ const App = () => {
         <div className="absolute right-0 top-1/4 w-[600px] h-[600px] bg-secondary/10 rounded-full blur-[120px] -z-10"></div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="reveal">
-              <h2 className="text-4xl font-bold mb-6">Who We Are</h2>
-              <div className="w-20 h-1 bg-gradient-to-r from-primary to-secondary mb-8"></div>
-              <p className="text-gray-400 text-lg mb-6 leading-relaxed">
-                XLARGI was founded in 2019. We are a boutique digital transformation consultancy and software development company that provides cutting edge engineering solutions, helping companies and enterprise clients untangle complex issues that always emerge during their digital evolution journey. At XLARGI, you will find the most diverse and exceptional group of people. We are innovators, dreamers, and thought leaders.
-              </p>
-              <div className="mb-8">
-                <h4 className="text-white font-bold text-lg mb-2">Our Vision</h4>
-                <p className="text-gray-400 italic">"To be the catalyst for the next industrial revolution in the ASEAN region, empowering enterprises to transcend traditional boundaries through the seamless integration of AI, IoT, and cognitive computing. We envision a connected ecosystem where our cutting-edge technological frameworks drive sustainable growth, operational excellence, and global competitiveness for our partners."</p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+            <div className="reveal space-y-6">
+              
+              <div className="glass-card p-6 rounded-xl border border-white/10 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-primary/10 rounded-full blur-xl -mr-10 -mt-10"></div>
+                <h2 className="text-2xl font-bold mb-3 text-white">Who We Are</h2>
+                <div className="w-12 h-1 bg-gradient-to-r from-primary to-secondary mb-4"></div>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  Founded in 2019, XLARGI is a boutique digital transformation consultancy. We are innovators and thought leaders helping enterprises untangle complex digital evolution challenges with cutting-edge engineering solutions.
+                </p>
               </div>
-              <div className="mb-8">
-                <h4 className="text-white font-bold text-lg mb-2">Our Mission</h4>
-                <p className="text-gray-400 italic">"Our mission is to engineer and deploy robust, scalable, and future-proof digital infrastructure that solves the most complex challenges of the modern enterprise. We are dedicated to providing realistic, high-impact solutions—from turnkey IT implementations to bespoke software development—that not only meet the rigorous demands of today's digital landscape but also anticipate the innovations of tomorrow, ensuring the highest level of customer satisfaction and long-term value."</p>
+
+              <div className="glass-card p-6 rounded-xl border border-white/10 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-secondary/10 rounded-full blur-xl -mr-10 -mt-10"></div>
+                <h4 className="text-xl font-bold mb-3 text-white">Our Vision</h4>
+                <p className="text-gray-400 text-sm italic">
+                  "To catalyze the next industrial revolution in ASEAN through seamless AI and IoT integration, driving sustainable growth and global competitiveness."
+                </p>
+              </div>
+
+              <div className="glass-card p-6 rounded-xl border border-white/10 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full blur-xl -mr-10 -mt-10"></div>
+                <h4 className="text-xl font-bold mb-3 text-white">Our Mission</h4>
+                <p className="text-gray-400 text-sm italic">
+                  "To engineer robust, future-proof digital infrastructure. We deliver high-impact solutions that solve complex challenges and anticipate tomorrow's innovations."
+                </p>
               </div>
               
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-2 gap-6 pt-4">
                 <div className="glass-card p-4 rounded-lg text-center">
                   <h3 className="text-3xl font-bold text-primary mb-1">6+</h3>
                   <p className="text-sm text-gray-500">Years Experience</p>
@@ -263,6 +291,7 @@ const App = () => {
                 </div>
               </div>
             </div>
+
             <div className="relative reveal delay-200">
               <div className="glass-card p-8 rounded-2xl border-l-4 border-primary relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
@@ -274,19 +303,19 @@ const App = () => {
                 <ul className="space-y-4 relative z-10">
                   <li className="flex items-center text-gray-300">
                     <span className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center mr-3">
-                      <i className="fas fa-check text-primary text-xs"></i>
+                      <i className="fa-solid fa-check text-primary text-xs"></i>
                     </span>
                     Turnkey IT Solutions
                   </li>
                   <li className="flex items-center text-gray-300">
                     <span className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center mr-3">
-                      <i className="fas fa-check text-primary text-xs"></i>
+                      <i className="fa-solid fa-check text-primary text-xs"></i>
                     </span>
                     Integrated Port Solutions
                   </li>
                   <li className="flex items-center text-gray-300">
                     <span className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center mr-3">
-                      <i className="fas fa-check text-primary text-xs"></i>
+                      <i className="fa-solid fa-check text-primary text-xs"></i>
                     </span>
                     Customized Software Development
                   </li>
@@ -349,7 +378,7 @@ const App = () => {
               <div className="space-y-6">
                 <div className="flex items-start">
                   <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mt-1 mr-4 shrink-0 border border-primary/20">
-                    <i className="fas fa-brain"></i>
+                    <i className="fa-solid fa-brain"></i>
                   </div>
                   <div>
                     <h4 className="text-white font-bold mb-1">New AI Model</h4>
@@ -358,7 +387,7 @@ const App = () => {
                 </div>
                 <div className="flex items-start">
                   <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary mt-1 mr-4 shrink-0 border border-secondary/20">
-                    <i className="fas fa-sliders-h"></i>
+                    <i className="fa-solid fa-sliders"></i>
                   </div>
                   <div>
                     <h4 className="text-white font-bold mb-1">Refined Sensitivity</h4>
@@ -367,7 +396,7 @@ const App = () => {
                 </div>
                 <div className="flex items-start">
                   <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 mt-1 mr-4 shrink-0 border border-purple-500/20">
-                    <i className="fas fa-network-wired"></i>
+                    <i className="fa-solid fa-network-wired"></i>
                   </div>
                   <div>
                     <h4 className="text-white font-bold mb-1">Seamless Integration</h4>
@@ -380,32 +409,32 @@ const App = () => {
             <div className="glass-card p-8 rounded-2xl border border-white/10 relative">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent rounded-2xl pointer-events-none"></div>
               <h4 className="text-lg font-bold text-white mb-6 flex items-center">
-                <i className="fas fa-exclamation-triangle text-yellow-400 mr-3"></i> Detects New Damage Classes
+                <i className="fa-solid fa-triangle-exclamation text-yellow-400 mr-3"></i> Detects New Damage Classes
               </h4>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-3 bg-white/5 rounded-lg border border-white/5 flex items-center space-x-3">
-                  <i className="fas fa-bullseye text-red-400"></i>
+                  <i className="fa-solid fa-bullseye text-red-400"></i>
                   <span className="text-gray-300 text-sm">Holes & Punctures</span>
                 </div>
                 <div className="p-3 bg-white/5 rounded-lg border border-white/5 flex items-center space-x-3">
-                  <i className="fas fa-door-open text-orange-400"></i>
+                  <i className="fa-solid fa-door-open text-orange-400"></i>
                   <span className="text-gray-300 text-sm">Bent Door Bars</span>
                 </div>
                 <div className="p-3 bg-white/5 rounded-lg border border-white/5 flex items-center space-x-3">
-                  <i className="fas fa-hand-paper text-blue-400"></i>
+                  <i className="fa-solid fa-hand text-blue-400"></i>
                   <span className="text-gray-300 text-sm">Damaged Handles</span>
                 </div>
                 <div className="p-3 bg-white/5 rounded-lg border border-white/5 flex items-center space-x-3">
-                  <i className="fas fa-wind text-cyan-400"></i>
+                  <i className="fa-solid fa-wind text-cyan-400"></i>
                   <span className="text-gray-300 text-sm">Missing Air Covers</span>
                 </div>
                 <div className="p-3 bg-white/5 rounded-lg border border-white/5 flex items-center space-x-3">
-                  <i className="fas fa-box text-purple-400"></i>
+                  <i className="fa-solid fa-box text-purple-400"></i>
                   <span className="text-gray-300 text-sm">Dents & Bulges</span>
                 </div>
                 <div className="p-3 bg-white/5 rounded-lg border border-white/5 flex items-center space-x-3">
-                  <i className="fas fa-eraser text-pink-400"></i>
+                  <i className="fa-solid fa-eraser text-pink-400"></i>
                   <span className="text-gray-300 text-sm">Rust & Scratches</span>
                 </div>
               </div>
@@ -438,39 +467,39 @@ const App = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="glass-card p-8 rounded-xl reveal group border-t-4 border-t-blue-500">
               <div className="w-14 h-14 bg-blue-500/20 rounded-lg flex items-center justify-center mb-6 text-blue-400 group-hover:scale-110 transition-transform duration-300">
-                <i className="fas fa-truck text-2xl"></i>
+                <i className="fa-solid fa-truck text-2xl"></i>
               </div>
               <h3 className="text-xl font-bold text-white mb-3">Truck OCR Portal</h3>
               <ul className="text-sm text-gray-400 space-y-2 mb-4">
-                <li><i className="fas fa-check text-blue-500 mr-2"></i> Modern Gate Automation</li>
-                <li><i className="fas fa-check text-blue-500 mr-2"></i> AI-based Trailer OCR</li>
-                <li><i className="fas fa-check text-blue-500 mr-2"></i> License Plate Recognition</li>
+                <li><i className="fa-solid fa-check text-blue-500 mr-2"></i> Modern Gate Automation</li>
+                <li><i className="fa-solid fa-check text-blue-500 mr-2"></i> AI-based Trailer OCR</li>
+                <li><i className="fa-solid fa-check text-blue-500 mr-2"></i> License Plate Recognition</li>
               </ul>
               <p className="text-xs text-gray-500 italic">Achieve shorter truck turnaround times with automated access validation.</p>
             </div>
 
             <div className="glass-card p-8 rounded-xl reveal delay-100 group border-t-4 border-t-purple-500">
               <div className="w-14 h-14 bg-purple-500/20 rounded-lg flex items-center justify-center mb-6 text-purple-400 group-hover:scale-110 transition-transform duration-300">
-                <i className="fas fa-train text-2xl"></i>
+                <i className="fa-solid fa-train text-2xl"></i>
               </div>
               <h3 className="text-xl font-bold text-white mb-3">Train OCR Portal</h3>
               <ul className="text-sm text-gray-400 space-y-2 mb-4">
-                <li><i className="fas fa-check text-purple-500 mr-2"></i> Automated Rail Imaging</li>
-                <li><i className="fas fa-check text-purple-500 mr-2"></i> High Accuracy (97-99.5%)</li>
-                <li><i className="fas fa-check text-purple-500 mr-2"></i> Safety from Office</li>
+                <li><i className="fa-solid fa-check text-purple-500 mr-2"></i> Automated Rail Imaging</li>
+                <li><i className="fa-solid fa-check text-purple-500 mr-2"></i> High Accuracy (97-99.5%)</li>
+                <li><i className="fa-solid fa-check text-purple-500 mr-2"></i> Safety from Office</li>
               </ul>
               <p className="text-xs text-gray-500 italic">Move inspection tasks from trackside to office, automating manifest validation.</p>
             </div>
 
             <div className="glass-card p-8 rounded-xl reveal delay-200 group border-t-4 border-t-cyan-500">
               <div className="w-14 h-14 bg-cyan-500/20 rounded-lg flex items-center justify-center mb-6 text-cyan-400 group-hover:scale-110 transition-transform duration-300">
-                <i className="fas fa-ship text-2xl"></i>
+                <i className="fa-solid fa-ship text-2xl"></i>
               </div>
               <h3 className="text-xl font-bold text-white mb-3">Quay & Crane OCR</h3>
               <ul className="text-sm text-gray-400 space-y-2 mb-4">
-                <li><i className="fas fa-check text-cyan-500 mr-2"></i> Crane OCR</li>
-                <li><i className="fas fa-check text-cyan-500 mr-2"></i> TopView Spreader OCR</li>
-                <li><i className="fas fa-check text-cyan-500 mr-2"></i> Prevents False Lifts</li>
+                <li><i className="fa-solid fa-check text-cyan-500 mr-2"></i> Crane OCR</li>
+                <li><i className="fa-solid fa-check text-cyan-500 mr-2"></i> TopView Spreader OCR</li>
+                <li><i className="fa-solid fa-check text-cyan-500 mr-2"></i> Prevents False Lifts</li>
               </ul>
               <p className="text-xs text-gray-500 italic">Digitize discharge & loading operations with "unmanned" crane environments.</p>
             </div>
@@ -491,7 +520,7 @@ const App = () => {
             <div className="glass-card p-10 rounded-xl reveal group border-l-4 border-green-500">
               <div className="flex items-center mb-6">
                 <div className="w-14 h-14 bg-green-500/20 rounded-lg flex items-center justify-center mr-6 text-green-400 group-hover:scale-110 transition-transform duration-300">
-                  <i className="fas fa-hands-helping text-2xl"></i>
+                  <i className="fa-solid fa-handshake-angle text-2xl"></i>
                 </div>
                 <h3 className="text-2xl font-bold text-white">Professional Services</h3>
               </div>
@@ -501,22 +530,22 @@ const App = () => {
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex items-center text-sm text-gray-300">
-                  <i className="fas fa-check-circle text-green-500 mr-3"></i> App Software Development
+                  <i className="fa-solid fa-check-circle text-green-500 mr-3"></i> App Software Development
                 </div>
                 <div className="flex items-center text-sm text-gray-300">
-                  <i className="fas fa-check-circle text-green-500 mr-3"></i> Cloud Solution Implementation
+                  <i className="fa-solid fa-check-circle text-green-500 mr-3"></i> Cloud Solution Implementation
                 </div>
                 <div className="flex items-center text-sm text-gray-300">
-                  <i className="fas fa-check-circle text-green-500 mr-3"></i> Site Preparation
+                  <i className="fa-solid fa-check-circle text-green-500 mr-3"></i> Site Preparation
                 </div>
                 <div className="flex items-center text-sm text-gray-300">
-                  <i className="fas fa-check-circle text-green-500 mr-3"></i> Outsourcing
+                  <i className="fa-solid fa-check-circle text-green-500 mr-3"></i> Outsourcing
                 </div>
                 <div className="flex items-center text-sm text-gray-300">
-                  <i className="fas fa-check-circle text-green-500 mr-3"></i> Disaster Recovery Center (DRC)
+                  <i className="fa-solid fa-check-circle text-green-500 mr-3"></i> Disaster Recovery Center (DRC)
                 </div>
                 <div className="flex items-center text-sm text-gray-300">
-                  <i className="fas fa-check-circle text-green-500 mr-3"></i> Managed Services
+                  <i className="fa-solid fa-check-circle text-green-500 mr-3"></i> Managed Services
                 </div>
               </div>
             </div>
@@ -524,7 +553,7 @@ const App = () => {
             <div className="glass-card p-10 rounded-xl reveal delay-100 group border-l-4 border-yellow-500">
               <div className="flex items-center mb-6">
                 <div className="w-14 h-14 bg-yellow-500/20 rounded-lg flex items-center justify-center mr-6 text-yellow-400 group-hover:scale-110 transition-transform duration-300">
-                  <i className="fas fa-brain text-2xl"></i>
+                  <i className="fa-solid fa-brain text-2xl"></i>
                 </div>
                 <h3 className="text-2xl font-bold text-white">Data Science & AI</h3>
               </div>
@@ -533,21 +562,21 @@ const App = () => {
               </p>
               <ul className="space-y-4">
                 <li className="flex items-start text-gray-300">
-                  <i className="fas fa-project-diagram text-yellow-500 mt-1 mr-3"></i>
+                  <i className="fa-solid fa-project-diagram text-yellow-500 mt-1 mr-3"></i>
                   <div>
                     <strong className="text-white block">Machine Learning</strong>
                     <span className="text-sm">Algorithms that learn from your data to optimize routes and resource allocation.</span>
                   </div>
                 </li>
                 <li className="flex items-start text-gray-300">
-                  <i className="fas fa-chart-line text-yellow-500 mt-1 mr-3"></i>
+                  <i className="fa-solid fa-chart-line text-yellow-500 mt-1 mr-3"></i>
                   <div>
                     <strong className="text-white block">Big Data Analytics</strong>
                     <span className="text-sm">Process massive datasets to derive crucial business insights in real-time.</span>
                   </div>
                 </li>
                 <li className="flex items-start text-gray-300">
-                  <i className="fas fa-robot text-yellow-500 mt-1 mr-3"></i>
+                  <i className="fa-solid fa-robot text-yellow-500 mt-1 mr-3"></i>
                   <div>
                     <strong className="text-white block">Cognitive Computing</strong>
                     <span className="text-sm">Simulating human thought processes to automate complex decision making.</span>
@@ -572,7 +601,7 @@ const App = () => {
             <div className="glass-card p-6 rounded-lg reveal hover:border-primary/50">
               <div className="flex items-center mb-4">
                 <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center mr-3 text-primary">
-                  <i className="fas fa-desktop"></i>
+                  <i className="fa-solid fa-desktop"></i>
                 </div>
                 <h3 className="text-lg font-bold text-white">CTOS</h3>
               </div>
@@ -582,7 +611,7 @@ const App = () => {
             <div className="glass-card p-6 rounded-lg reveal delay-100 hover:border-secondary/50">
               <div className="flex items-center mb-4">
                 <div className="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center mr-3 text-secondary">
-                  <i className="fas fa-network-wired"></i>
+                  <i className="fa-solid fa-network-wired"></i>
                 </div>
                 <h3 className="text-lg font-bold text-white">MTOS</h3>
               </div>
@@ -592,7 +621,7 @@ const App = () => {
             <div className="glass-card p-6 rounded-lg reveal delay-200 hover:border-green-500/50">
               <div className="flex items-center mb-4">
                 <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center mr-3 text-green-400">
-                  <i className="fas fa-globe"></i>
+                  <i className="fa-solid fa-globe"></i>
                 </div>
                 <h3 className="text-lg font-bold text-white">Integrated Port Management</h3>
               </div>
@@ -602,7 +631,7 @@ const App = () => {
             <div className="glass-card p-6 rounded-lg reveal hover:border-yellow-500/50">
               <div className="flex items-center mb-4">
                 <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center mr-3 text-yellow-400">
-                  <i className="fas fa-calendar-check"></i>
+                  <i className="fa-solid fa-calendar-check"></i>
                 </div>
                 <h3 className="text-lg font-bold text-white">VBS / Troboss</h3>
               </div>
@@ -612,7 +641,7 @@ const App = () => {
             <div className="glass-card p-6 rounded-lg reveal delay-100 hover:border-purple-500/50">
               <div className="flex items-center mb-4">
                 <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center mr-3 text-purple-400">
-                  <i className="fas fa-wifi"></i>
+                  <i className="fa-solid fa-wifi"></i>
                 </div>
                 <h3 className="text-lg font-bold text-white">Cyber City</h3>
               </div>
@@ -622,7 +651,7 @@ const App = () => {
             <div className="glass-card p-6 rounded-lg reveal delay-200 hover:border-red-500/50">
               <div className="flex items-center mb-4">
                 <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center mr-3 text-red-400">
-                  <i className="fas fa-file-invoice-dollar"></i>
+                  <i className="fa-solid fa-file-invoice-dollar"></i>
                 </div>
                 <h3 className="text-lg font-bold text-white">Billing & CFS</h3>
               </div>
@@ -643,7 +672,7 @@ const App = () => {
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-widest mb-4">
                 Success Story
               </div>
-              <h2 className="text-4xl font-bold mb-6 text-white">Wharf Optimization at <span className="text-primary">European Port</span></h2>
+              <h2 className="text-4xl font-bold mb-6 text-white">Wharf Optimization at <span class="text-primary">European Port</span></h2>
               <p className="text-gray-300 text-lg mb-6 italic">
                 "The new automated process has significantly enhanced safety by minimizing human presence in high-risk areas."
               </p>
@@ -666,21 +695,21 @@ const App = () => {
                 <h3 className="text-xl font-bold text-white mb-4">The Solution Deployed</h3>
                 <ul className="space-y-4">
                   <li className="flex items-start text-gray-300">
-                    <i className="fas fa-check-circle text-primary mt-1 mr-3"></i>
+                    <i className="fa-solid fa-check-circle text-primary mt-1 mr-3"></i>
                     <div>
                       <strong className="text-white block">Crane OCR</strong>
                       <span className="text-sm">Captures IDs, seals, and door direction during flight path.</span>
                     </div>
                   </li>
                   <li className="flex items-start text-gray-300">
-                    <i className="fas fa-check-circle text-primary mt-1 mr-3"></i>
+                    <i className="fa-solid fa-check-circle text-primary mt-1 mr-3"></i>
                     <div>
                       <strong className="text-white block">TopView</strong>
                       <span className="text-sm">Spreader OCR for early ID verification from container roof.</span>
                     </div>
                   </li>
                   <li className="flex items-start text-gray-300">
-                    <i className="fas fa-check-circle text-primary mt-1 mr-3"></i>
+                    <i className="fa-solid fa-check-circle text-primary mt-1 mr-3"></i>
                     <div>
                       <strong className="text-white block">Smart Apps</strong>
                       <span className="text-sm">Wharf App & Pinning App for digitized stevedore instructions.</span>
@@ -712,7 +741,7 @@ const App = () => {
                 <div className="space-y-6">
                   <div className="flex items-start space-x-4">
                     <div className="w-10 h-10 rounded-lg glass-card flex items-center justify-center text-primary mt-1 border-white/10">
-                      <i className="fas fa-map-marker-alt"></i>
+                      <i className="fa-solid fa-map-marker-alt"></i>
                     </div>
                     <div>
                       <h4 className="font-bold text-white">Visit Us</h4>
@@ -721,7 +750,7 @@ const App = () => {
                   </div>
                   <div className="flex items-start space-x-4">
                     <div className="w-10 h-10 rounded-lg glass-card flex items-center justify-center text-secondary mt-1 border-white/10">
-                      <i className="fas fa-envelope"></i>
+                      <i className="fa-solid fa-envelope"></i>
                     </div>
                     <div>
                       <h4 className="font-bold text-white">Email Us</h4>
@@ -734,13 +763,13 @@ const App = () => {
                   <p className="text-sm text-gray-500 mb-4">Follow us</p>
                   <div className="flex space-x-4">
                     <a href="#" className="w-10 h-10 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-white hover:bg-primary hover:text-black hover:border-primary transition-all">
-                      <i className="fab fa-facebook-f"></i>
+                      <i className="fa-brands fa-facebook-f"></i>
                     </a>
                     <a href="#" className="w-10 h-10 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-white hover:bg-primary hover:text-black hover:border-primary transition-all">
-                      <i className="fab fa-twitter"></i>
+                      <i className="fa-brands fa-twitter"></i>
                     </a>
                     <a href="#" className="w-10 h-10 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-white hover:bg-primary hover:text-black hover:border-primary transition-all">
-                      <i className="fab fa-linkedin-in"></i>
+                      <i className="fa-brands fa-linkedin-in"></i>
                     </a>
                   </div>
                 </div>
