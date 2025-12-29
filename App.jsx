@@ -230,6 +230,19 @@ const App = () => {
               Get in Touch
             </a>
           </div>
+
+          {/* Tech Stack Ticker */}
+          <div className="mt-20 pt-10 border-t border-white/5 backdrop-blur-[2px]">
+            <p className="text-sm text-gray-500 uppercase tracking-widest mb-6 font-semibold">Powering Next-Gen Solutions With</p>
+            <div className="flex flex-wrap justify-center gap-8 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+              <i className="fa-brands fa-unity text-4xl hover:text-white transition-colors" title="Unity"></i>
+              <i className="fa-brands fa-react text-4xl hover:text-[#61DAFB] transition-colors" title="React"></i>
+              <i className="fa-brands fa-angular text-4xl hover:text-[#DD0031] transition-colors" title="Angular"></i>
+              <i className="fa-brands fa-python text-4xl hover:text-[#3776AB] transition-colors" title="Python"></i>
+              <i className="fa-brands fa-aws text-4xl hover:text-[#FF9900] transition-colors" title="AWS"></i>
+              <i className="fa-brands fa-node text-4xl hover:text-[#339933] transition-colors" title="Node.js"></i>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -239,50 +252,50 @@ const App = () => {
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-            <div className="reveal space-y-6">
+            <div className="reveal w-full space-y-8">
               
-              <div className="glass-card p-6 rounded-xl border border-white/10 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-primary/10 rounded-full blur-xl -mr-10 -mt-10"></div>
-                <h2 className="text-2xl font-bold mb-3 text-white">Who We Are</h2>
-                <div className="w-12 h-1 bg-gradient-to-r from-primary to-secondary mb-4"></div>
-                <p className="text-gray-400 text-sm leading-relaxed">
-                  Founded in 2019, XLARGI is a boutique digital transformation consultancy. We are innovators and thought leaders helping enterprises untangle complex digital evolution challenges with cutting-edge engineering solutions.
+              <div className="glass-card p-10 rounded-3xl border border-white/10 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/20 rounded-full blur-3xl"></div>
+                <h2 className="text-3xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">Who We Are</h2>
+                <div className="w-16 h-1.5 bg-gradient-to-r from-primary to-secondary rounded-full mb-6"></div>
+                <p className="text-gray-300 text-lg leading-relaxed font-light">
+                  Founded in 2019, <strong className="text-white font-semibold">XLARGI</strong> is a boutique digital transformation consultancy. We are innovators and thought leaders helping enterprises untangle complex digital evolution challenges with cutting-edge engineering solutions.
                 </p>
               </div>
 
-              <div className="glass-card p-6 rounded-xl border border-white/10 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-secondary/10 rounded-full blur-xl -mr-10 -mt-10"></div>
-                <h4 className="text-xl font-bold mb-3 text-white">Our Vision</h4>
-                <p className="text-gray-400 text-sm italic">
+              <div className="glass-card p-8 rounded-3xl border border-white/10 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 hover:border-secondary/30">
+                <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
+                <h4 className="text-2xl font-bold mb-3 text-white flex items-center gap-3">
+                  <span className="text-secondary text-3xl">✦</span> Our Vision
+                </h4>
+                <p className="text-gray-400 text-base italic pl-2 border-l-2 border-secondary/30">
                   "To catalyze the industrial revolution in ASEAN through seamless AI and IoT integration, driving sustainable growth and global competitiveness."
                 </p>
               </div>
 
-              <div className="glass-card p-6 rounded-xl border border-white/10 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full blur-xl -mr-10 -mt-10"></div>
-                <h4 className="text-xl font-bold mb-3 text-white">Our Mission</h4>
-                <p className="text-gray-400 text-sm italic">
+              <div className="glass-card p-8 rounded-3xl border border-white/10 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 hover:border-green-500/30">
+                <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute bottom-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-3xl -mr-10 -mb-10"></div>
+                <h4 className="text-2xl font-bold mb-3 text-white flex items-center gap-3">
+                  <span className="text-green-400 text-3xl">◈</span> Our Mission
+                </h4>
+                <p className="text-gray-400 text-base italic pl-2 border-l-2 border-green-500/30">
                   "To engineer robust, future-proof digital infrastructure. We deliver high-impact solutions that solve complex challenges and anticipate tomorrow's innovations."
                 </p>
               </div>
               
-              <div className="grid grid-cols-2 gap-6 pt-4">
-                <div className="glass-card p-4 rounded-lg text-center">
-                  <h3 className="text-3xl font-bold text-primary mb-1">6+</h3>
-                  <p className="text-sm text-gray-500">Years Experience</p>
-                </div>
-                <div className="glass-card p-4 rounded-lg text-center">
-                  <h3 className="text-3xl font-bold text-secondary mb-1">100%</h3>
-                  <p className="text-sm text-gray-500">Reliable Solutions</p>
-                </div>
-              </div>
             </div>
 
-            <div className="relative reveal delay-200">
-              <div className="glass-card p-8 rounded-2xl border-l-4 border-primary relative overflow-hidden h-full flex flex-col justify-center">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+            <div className="relative reveal delay-200 h-full">
+              <div className="glass-card p-8 rounded-3xl border-l-4 border-primary relative overflow-hidden h-full flex flex-col justify-center min-h-[500px]">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -mr-20 -mt-20 animate-pulse"></div>
+                <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary/10 rounded-full blur-3xl -ml-20 -mb-20 animate-pulse delay-700"></div>
                 
-                {/* Logo container removed here */}
+                <div className="flex items-center justify-center h-full relative z-10">
+                  <img src="lumima_logo_website.png" alt="XLARGI" className="max-w-[90%] max-h-[80%] object-contain drop-shadow-2xl" />
+                </div>
               </div>
             </div>
           </div>
