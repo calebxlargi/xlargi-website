@@ -230,19 +230,6 @@ const App = () => {
               Get in Touch
             </a>
           </div>
-
-          {/* Tech Stack Ticker */}
-          <div className="mt-20 pt-10 border-t border-white/5 backdrop-blur-[2px]">
-            <p className="text-sm text-gray-500 uppercase tracking-widest mb-6 font-semibold">Powering Next-Gen Solutions With</p>
-            <div className="flex flex-wrap justify-center gap-8 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-              <i className="fa-brands fa-unity text-4xl hover:text-white transition-colors" title="Unity"></i>
-              <i className="fa-brands fa-react text-4xl hover:text-[#61DAFB] transition-colors" title="React"></i>
-              <i className="fa-brands fa-angular text-4xl hover:text-[#DD0031] transition-colors" title="Angular"></i>
-              <i className="fa-brands fa-python text-4xl hover:text-[#3776AB] transition-colors" title="Python"></i>
-              <i className="fa-brands fa-aws text-4xl hover:text-[#FF9900] transition-colors" title="AWS"></i>
-              <i className="fa-brands fa-node text-4xl hover:text-[#339933] transition-colors" title="Node.js"></i>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -733,18 +720,7 @@ const App = () => {
               </div>
 
               <div className="mt-12 pt-8 border-t border-white/10">
-                <h4 className="font-bold text-white text-lg mb-6">Follow Us</h4>
-                <div className="flex space-x-4">
-                  <a href="#" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-primary hover:text-black hover:border-primary hover:-translate-y-1 transition-all duration-300">
-                    <i className="fa-brands fa-facebook-f text-lg"></i>
-                  </a>
-                  <a href="#" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-secondary hover:text-white hover:border-secondary hover:-translate-y-1 transition-all duration-300">
-                    <i className="fa-brands fa-twitter text-lg"></i>
-                  </a>
-                  <a href="#" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-green-500 hover:text-white hover:border-green-500 hover:-translate-y-1 transition-all duration-300">
-                    <i className="fa-brands fa-linkedin-in text-lg"></i>
-                  </a>
-                </div>
+                {/* Social media icons and text removed */}
               </div>
             </div>
 
