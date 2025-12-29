@@ -613,7 +613,6 @@ const App = () => {
 
       {/* Case Study Section */}
       <section id="case-study" className="py-24 relative overflow-hidden bg-gradient-to-b from-dark to-dark-lighter">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1580674684081-7617fbf3d745?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80')] bg-cover bg-fixed opacity-10 grayscale"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/80 to-transparent"></div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -676,7 +675,7 @@ const App = () => {
         </div>
       </section>
 
-      {/* Contact Section - Redesigned as requested */}
+      {/* Contact Section */}
       <section id="contact" className="py-24 relative overflow-hidden bg-dark-lighter">
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-primary/10 to-secondary/10 rounded-full blur-[100px] -z-10"></div>
 
