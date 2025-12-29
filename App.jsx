@@ -201,8 +201,8 @@ const App = () => {
             <source src="https://njwscgft917wos7z.public.blob.vercel-storage.com/xlargi_hero.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
-          {/* Overlay gradient */}
-          <div className="absolute inset-0 bg-gradient-to-b from-dark/80 via-dark/50 to-dark"></div>
+          {/* Overlay gradient - Made lighter to show video more */}
+          <div className="absolute inset-0 bg-gradient-to-b from-dark/60 via-dark/30 to-dark"></div>
         </div>
 
         {/* Canvas Background */}
@@ -267,7 +267,7 @@ const App = () => {
                 <div className="absolute top-0 right-0 w-20 h-20 bg-secondary/10 rounded-full blur-xl -mr-10 -mt-10"></div>
                 <h4 className="text-xl font-bold mb-3 text-white">Our Vision</h4>
                 <p className="text-gray-400 text-sm italic">
-                  "To catalyze the next industrial revolution in ASEAN through seamless AI and IoT integration, driving sustainable growth and global competitiveness."
+                  "To catalyze the industrial revolution in ASEAN through seamless AI and IoT integration, driving sustainable growth and global competitiveness."
                 </p>
               </div>
 
@@ -293,7 +293,7 @@ const App = () => {
 
             <div className="relative reveal delay-200">
               <div className="glass-card p-8 rounded-2xl border-l-4 border-primary relative overflow-hidden h-full flex flex-col justify-center">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-xl -mr-10 -mt-10"></div>
                 
                 <div className="flex items-center justify-center h-full">
                   <img src="lumima_logo_website.png" alt="XLARGI" className="max-w-[80%] max-h-[80%] object-contain" />
@@ -641,7 +641,6 @@ const App = () => {
 
       {/* Case Study Section */}
       <section id="case-study" className="py-24 relative overflow-hidden bg-gradient-to-b from-dark to-dark-lighter">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1580674684081-7617fbf3d745?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80')] bg-cover bg-fixed opacity-10 grayscale"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/80 to-transparent"></div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
