@@ -213,7 +213,6 @@ const App = () => {
         {/* Ambient Glow Elements */}
         <div className="absolute top-0 -left-4 w-96 h-96 bg-primary rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-blob"></div>
         <div className="absolute top-0 -right-4 w-96 h-96 bg-secondary rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-blob animation-delay-2000"></div>
-        {/* Removed bottom glowing background */}
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
