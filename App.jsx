@@ -198,7 +198,7 @@ const App = () => {
         {/* Video Background */}
         <div className="absolute inset-0 w-full h-full z-0">
           <video className="w-full h-full object-cover opacity-30" autoPlay muted loop playsInline>
-            <source src="Untitled design_Precise_Proteus.mp4" type="video/mp4" />
+            <source src="https://njwscgft917wos7z.public.blob.vercel-storage.com/xlargi_hero.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
           {/* Overlay gradient */}
@@ -213,7 +213,7 @@ const App = () => {
         {/* Ambient Glow Elements */}
         <div className="absolute top-0 -left-4 w-96 h-96 bg-primary rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-blob"></div>
         <div className="absolute top-0 -right-4 w-96 h-96 bg-secondary rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-[500px] h-[500px] bg-blue-600 rounded-full mix-blend-screen filter blur-[150px] opacity-10"></div>
+        {/* Removed bottom glowing background */}
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
@@ -699,90 +699,6 @@ const App = () => {
                   <span className="block text-xs text-gray-500 mb-1">Project Impact</span>
                   <span className="text-lg font-bold text-white">Full Transparency & Safety</span>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section id="contact" className="py-24 relative overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-primary/20 to-secondary/20 rounded-full blur-[100px] -z-10"></div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="glass-card rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl">
-            <div className="grid grid-cols-1 lg:grid-cols-2">
-              <div className="p-10 md:p-14 bg-black/40 relative">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary"></div>
-                <h2 className="text-3xl font-bold mb-6 text-white">Let's Build the Future</h2>
-                <p className="text-gray-300 mb-8">Ready to start your digital transformation? Fill out the form and we'll get back to you within 48 hours.</p>
-                
-                <div className="space-y-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-10 h-10 rounded-lg glass-card flex items-center justify-center text-primary mt-1 border-white/10">
-                      <i className="fa-solid fa-map-marker-alt"></i>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-white">Visit Us</h4>
-                      <p className="text-gray-400 text-sm">15-1 (First Floor), Jalan SS 21/37,<br />Damansara Utama,<br />47400 Petaling Jaya, Selangor, Malaysia.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-4">
-                    <div className="w-10 h-10 rounded-lg glass-card flex items-center justify-center text-secondary mt-1 border-white/10">
-                      <i className="fa-solid fa-envelope"></i>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-white">Email Us</h4>
-                      <p className="text-gray-400 text-sm">info@xlargi.com</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-12">
-                  <p className="text-sm text-gray-500 mb-4">Follow us</p>
-                  <div className="flex space-x-4">
-                    <a href="#" className="w-10 h-10 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-white hover:bg-primary hover:text-black hover:border-primary transition-all">
-                      <i className="fa-brands fa-facebook-f"></i>
-                    </a>
-                    <a href="#" className="w-10 h-10 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-white hover:bg-primary hover:text-black hover:border-primary transition-all">
-                      <i className="fa-brands fa-twitter"></i>
-                    </a>
-                    <a href="#" className="w-10 h-10 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-white hover:bg-primary hover:text-black hover:border-primary transition-all">
-                      <i className="fa-brands fa-linkedin-in"></i>
-                    </a>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-10 md:p-14 bg-black/60 backdrop-blur-md">
-                <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); alert('Message sent! We will contact you shortly.'); }}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-400 mb-2">Name</label>
-                      <input type="text" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:bg-white/10 transition-all backdrop-blur-sm" placeholder="John Doe" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-400 mb-2">Email</label>
-                      <input type="email" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:bg-white/10 transition-all backdrop-blur-sm" placeholder="john@example.com" />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">Subject</label>
-                    <select className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:bg-white/10 transition-all backdrop-blur-sm">
-                      <option className="bg-dark">General Inquiry</option>
-                      <option className="bg-dark">App Development</option>
-                      <option className="bg-dark">VR/AR Solutions</option>
-                      <option className="bg-dark">Consulting</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">Message</label>
-                    <textarea rows="4" className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-primary focus:bg-white/10 transition-all backdrop-blur-sm" placeholder="Tell us about your project..."></textarea>
-                  </div>
-                  <button type="submit" className="w-full btn-modern py-4 shadow-lg hover:shadow-cyan-500/25">
-                    Send Message
-                  </button>
-                </form>
               </div>
             </div>
           </div>
