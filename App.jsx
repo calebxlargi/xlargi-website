@@ -230,6 +230,19 @@ const App = () => {
               Get in Touch
             </a>
           </div>
+
+          {/* Tech Stack Ticker */}
+          <div className="mt-20 pt-10 border-t border-white/5 backdrop-blur-[2px]">
+            <p className="text-sm text-gray-500 uppercase tracking-widest mb-6 font-semibold">Powering Next-Gen Solutions With</p>
+            <div className="flex flex-wrap justify-center gap-8 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+              <i className="fa-brands fa-unity text-4xl hover:text-white transition-colors" title="Unity"></i>
+              <i className="fa-brands fa-react text-4xl hover:text-[#61DAFB] transition-colors" title="React"></i>
+              <i className="fa-brands fa-angular text-4xl hover:text-[#DD0031] transition-colors" title="Angular"></i>
+              <i className="fa-brands fa-python text-4xl hover:text-[#3776AB] transition-colors" title="Python"></i>
+              <i className="fa-brands fa-aws text-4xl hover:text-[#FF9900] transition-colors" title="AWS"></i>
+              <i className="fa-brands fa-node text-4xl hover:text-[#339933] transition-colors" title="Node.js"></i>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -671,6 +684,123 @@ const App = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Section - Redesigned as requested */}
+      <section id="contact" className="py-24 relative overflow-hidden bg-dark-lighter">
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-primary/10 to-secondary/10 rounded-full blur-[100px] -z-10"></div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-16 reveal">
+            <h2 className="text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Contact Us</h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">Ready to start your digital transformation? Get in touch with our experts today.</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            
+            {/* Contact Info Card */}
+            <div className="glass-card p-10 rounded-3xl border border-white/10 relative overflow-hidden reveal group hover:border-primary/50 transition-all duration-300">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl -mr-10 -mt-10"></div>
+              
+              <h3 className="text-2xl font-bold text-white mb-8">Get In Touch</h3>
+              
+              <div className="space-y-8">
+                <div className="flex items-start group/item">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary text-xl mr-5 group-hover/item:bg-primary group-hover/item:text-black transition-all duration-300">
+                    <i className="fa-solid fa-location-dot"></i>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white text-lg mb-1">Visit Us</h4>
+                    <p className="text-gray-400 leading-relaxed">
+                      15-1 (First Floor), Jalan SS 21/37,<br />
+                      Damansara Utama,<br />
+                      47400 Petaling Jaya, Selangor, Malaysia.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start group/item">
+                  <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary text-xl mr-5 group-hover/item:bg-secondary group-hover/item:text-white transition-all duration-300">
+                    <i className="fa-solid fa-envelope"></i>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white text-lg mb-1">Email Us</h4>
+                    <p className="text-gray-400">info@xlargi.com</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-12 pt-8 border-t border-white/10">
+                <h4 className="font-bold text-white text-lg mb-6">Follow Us</h4>
+                <div className="flex space-x-4">
+                  <a href="#" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-primary hover:text-black hover:border-primary hover:-translate-y-1 transition-all duration-300">
+                    <i className="fa-brands fa-facebook-f text-lg"></i>
+                  </a>
+                  <a href="#" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-secondary hover:text-white hover:border-secondary hover:-translate-y-1 transition-all duration-300">
+                    <i className="fa-brands fa-twitter text-lg"></i>
+                  </a>
+                  <a href="#" className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-green-500 hover:text-white hover:border-green-500 hover:-translate-y-1 transition-all duration-300">
+                    <i className="fa-brands fa-linkedin-in text-lg"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Form */}
+            <div className="glass-card p-10 rounded-3xl border border-white/10 relative overflow-hidden reveal delay-100 bg-white/5">
+              <h3 className="text-2xl font-bold text-white mb-8">Send a Message</h3>
+              
+              <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); alert('Message sent! We will contact you shortly.'); }}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-400">Name</label>
+                    <input 
+                      type="text" 
+                      className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder-gray-600" 
+                      placeholder="John Doe" 
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-400">Email</label>
+                    <input 
+                      type="email" 
+                      className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder-gray-600" 
+                      placeholder="john@example.com" 
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-400">Subject</label>
+                  <select className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none">
+                    <option className="bg-dark text-gray-400">Select a topic...</option>
+                    <option className="bg-dark">General Inquiry</option>
+                    <option className="bg-dark">App Development</option>
+                    <option className="bg-dark">VR/AR Solutions</option>
+                    <option className="bg-dark">Consulting</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-400">Message</label>
+                  <textarea 
+                    rows="4" 
+                    className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder-gray-600 resize-none" 
+                    placeholder="Tell us about your project..."
+                  ></textarea>
+                </div>
+
+                <button 
+                  type="submit" 
+                  className="w-full py-4 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-bold text-lg shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 transition-all duration-300"
+                >
+                  Send Message
+                </button>
+              </form>
+            </div>
+
           </div>
         </div>
       </section>
