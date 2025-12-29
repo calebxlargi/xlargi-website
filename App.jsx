@@ -238,51 +238,40 @@ const App = () => {
         <div className="absolute right-0 top-1/4 w-[600px] h-[600px] bg-secondary/10 rounded-full blur-[120px] -z-10"></div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-            <div className="reveal w-full space-y-8">
+          <div className="reveal w-full grid grid-cols-1 md:grid-cols-2 gap-8">
               
-              <div className="glass-card p-10 rounded-3xl border border-white/10 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/30 rounded-full blur-3xl animate-pulse"></div>
-                <h2 className="text-4xl font-extrabold mb-4 text-white drop-shadow-md">Who We Are</h2>
-                <div className="w-20 h-2 bg-gradient-to-r from-primary via-blue-500 to-secondary rounded-full mb-6"></div>
-                <p className="text-gray-200 text-lg leading-relaxed font-light">
-                  Founded in 2019, <strong className="text-primary font-bold">XLARGI</strong> is a boutique digital transformation consultancy. We are innovators and thought leaders helping enterprises untangle complex digital evolution challenges with cutting-edge engineering solutions.
-                </p>
-              </div>
-
-              <div className="glass-card p-10 rounded-3xl border border-white/10 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 hover:border-secondary/50">
-                <div className="absolute inset-0 bg-gradient-to-br from-secondary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="absolute top-0 right-0 w-40 h-40 bg-secondary/20 rounded-full blur-3xl -mr-10 -mt-10 animate-blob"></div>
-                <h4 className="text-3xl font-bold mb-4 text-white flex items-center gap-4">
-                  <span className="text-secondary text-4xl filter drop-shadow-lg">✦</span> Our Vision
-                </h4>
-                <p className="text-gray-300 text-lg italic pl-4 border-l-4 border-secondary/50">
-                  "To catalyze the industrial revolution in ASEAN through seamless AI and IoT integration, driving sustainable growth and global competitiveness."
-                </p>
-              </div>
-
-              <div className="glass-card p-10 rounded-3xl border border-white/10 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 hover:border-green-500/50">
-                <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="absolute bottom-0 right-0 w-40 h-40 bg-green-500/20 rounded-full blur-3xl -mr-10 -mb-10 animate-blob animation-delay-2000"></div>
-                <h4 className="text-3xl font-bold mb-4 text-white flex items-center gap-4">
-                  <span className="text-green-400 text-4xl filter drop-shadow-lg">◈</span> Our Mission
-                </h4>
-                <p className="text-gray-300 text-lg italic pl-4 border-l-4 border-green-500/50">
-                  "To engineer robust, future-proof digital infrastructure. We deliver high-impact solutions that solve complex challenges and anticipate tomorrow's innovations."
-                </p>
-              </div>
-              
+            <div className="glass-card p-10 rounded-3xl border border-white/10 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 md:col-span-2">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/30 rounded-full blur-3xl animate-pulse"></div>
+              <h2 className="text-4xl font-extrabold mb-4 text-white drop-shadow-md">Who We Are</h2>
+              <div className="w-20 h-2 bg-gradient-to-r from-primary via-blue-500 to-secondary rounded-full mb-6"></div>
+              <p className="text-gray-200 text-lg leading-relaxed font-light">
+                Founded in 2019, <strong className="text-primary font-bold">XLARGI</strong> is a boutique digital transformation consultancy. We are innovators and thought leaders helping enterprises untangle complex digital evolution challenges with cutting-edge engineering solutions.
+              </p>
             </div>
 
-            <div className="relative reveal delay-200 h-full">
-              <div className="glass-card p-8 rounded-3xl border-l-4 border-primary relative overflow-hidden h-full flex flex-col justify-center min-h-[500px]">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -mr-20 -mt-20 animate-pulse"></div>
-                <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary/10 rounded-full blur-3xl -ml-20 -mb-20 animate-pulse delay-700"></div>
-                
-                {/* Logo removed previously, keeping the container for layout balance if desired or empty */}
-              </div>
+            <div className="glass-card p-10 rounded-3xl border border-white/10 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 hover:border-secondary/50">
+              <div className="absolute inset-0 bg-gradient-to-br from-secondary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="absolute top-0 right-0 w-40 h-40 bg-secondary/20 rounded-full blur-3xl -mr-10 -mt-10 animate-blob"></div>
+              <h4 className="text-3xl font-bold mb-4 text-white flex items-center gap-4">
+                <span className="text-secondary text-4xl filter drop-shadow-lg">✦</span> Our Vision
+              </h4>
+              <p className="text-gray-300 text-lg italic pl-4 border-l-4 border-secondary/50">
+                "To catalyze the industrial revolution in ASEAN through seamless AI and IoT integration, driving sustainable growth and global competitiveness."
+              </p>
             </div>
+
+            <div className="glass-card p-10 rounded-3xl border border-white/10 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 hover:border-green-500/50">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="absolute bottom-0 right-0 w-40 h-40 bg-green-500/20 rounded-full blur-3xl -mr-10 -mb-10 animate-blob animation-delay-2000"></div>
+              <h4 className="text-3xl font-bold mb-4 text-white flex items-center gap-4">
+                <span className="text-green-400 text-4xl filter drop-shadow-lg">◈</span> Our Mission
+              </h4>
+              <p className="text-gray-300 text-lg italic pl-4 border-l-4 border-green-500/50">
+                "To engineer robust, future-proof digital infrastructure. We deliver high-impact solutions that solve complex challenges and anticipate tomorrow's innovations."
+              </p>
+            </div>
+            
           </div>
         </div>
       </section>
