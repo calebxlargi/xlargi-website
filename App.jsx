@@ -230,19 +230,6 @@ const App = () => {
               Get in Touch
             </a>
           </div>
-
-          {/* Tech Stack Ticker */}
-          <div className="mt-20 pt-10 border-t border-white/5 backdrop-blur-[2px]">
-            <p className="text-sm text-gray-500 uppercase tracking-widest mb-6 font-semibold">Powering Next-Gen Solutions With</p>
-            <div className="flex flex-wrap justify-center gap-8 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-              <i className="fa-brands fa-unity text-4xl hover:text-white transition-colors" title="Unity"></i>
-              <i className="fa-brands fa-react text-4xl hover:text-[#61DAFB] transition-colors" title="React"></i>
-              <i className="fa-brands fa-angular text-4xl hover:text-[#DD0031] transition-colors" title="Angular"></i>
-              <i className="fa-brands fa-python text-4xl hover:text-[#3776AB] transition-colors" title="Python"></i>
-              <i className="fa-brands fa-aws text-4xl hover:text-[#FF9900] transition-colors" title="AWS"></i>
-              <i className="fa-brands fa-node text-4xl hover:text-[#339933] transition-colors" title="Node.js"></i>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -293,11 +280,9 @@ const App = () => {
 
             <div className="relative reveal delay-200">
               <div className="glass-card p-8 rounded-2xl border-l-4 border-primary relative overflow-hidden h-full flex flex-col justify-center">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-xl -mr-10 -mt-10"></div>
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
                 
-                <div className="flex items-center justify-center h-full">
-                  <img src="lumima_logo_website.png" alt="XLARGI" className="max-w-[80%] max-h-[80%] object-contain" />
-                </div>
+                {/* Logo container removed here */}
               </div>
             </div>
           </div>
