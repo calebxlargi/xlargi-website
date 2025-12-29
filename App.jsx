@@ -293,33 +293,12 @@ const App = () => {
             </div>
 
             <div className="relative reveal delay-200">
-              <div className="glass-card p-8 rounded-2xl border-l-4 border-primary relative overflow-hidden">
+              <div className="glass-card p-8 rounded-2xl border-l-4 border-primary relative overflow-hidden h-full flex flex-col justify-center">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
                 
-                <h3 className="text-xl font-bold mb-4 text-white relative z-10">Our Culture</h3>
-                <p className="text-gray-400 mb-6 relative z-10 leading-relaxed">
-                  Our team is passionate in what they do, and are driven to make the transformational power of technology accessible to all. Our culture is one of collaboration, free thinking, flexibility, and overachieving.
-                </p>
-                <ul className="space-y-4 relative z-10">
-                  <li className="flex items-center text-gray-300">
-                    <span className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center mr-3">
-                      <i className="fa-solid fa-check text-primary text-xs"></i>
-                    </span>
-                    Turnkey IT Solutions
-                  </li>
-                  <li className="flex items-center text-gray-300">
-                    <span className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center mr-3">
-                      <i className="fa-solid fa-check text-primary text-xs"></i>
-                    </span>
-                    Integrated Port Solutions
-                  </li>
-                  <li className="flex items-center text-gray-300">
-                    <span className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center mr-3">
-                      <i className="fa-solid fa-check text-primary text-xs"></i>
-                    </span>
-                    Customized Software Development
-                  </li>
-                </ul>
+                <div className="flex items-center justify-center h-full">
+                  <img src="lumima_logo_website.png" alt="XLARGI" className="max-w-[80%] max-h-[80%] object-contain" />
+                </div>
               </div>
             </div>
           </div>
