@@ -49,9 +49,16 @@ const App = () => {
   // Force Video Autoplay (Mobile Fix)
   useEffect(() => {
     if (videoRef.current) {
-        videoRef.current.play().catch(error => {
-            console.log("Autoplay prevented:", error);
-        });
+        // Attempt to play video programmatically to bypass some mobile restrictions
+        const playPromise = videoRef.current.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                console.log("Autoplay prevented:", error);
+                // Fallback: Mute again and try playing (sometimes helps)
+                videoRef.current.muted = true;
+                videoRef.current.play();
+            });
+        }
     }
   }, []);
 
@@ -216,6 +223,7 @@ const App = () => {
             loop 
             playsInline
           >
+            {/* Using the .mp4 version which is more compatible for mobile autoplay */}
             <source src="https://njwscgft917wos7z.public.blob.vercel-storage.com/xlargi_hero.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
@@ -232,23 +240,7 @@ const App = () => {
         <div className="absolute top-0 -left-4 w-96 h-96 bg-primary rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-blob"></div>
         <div className="absolute top-0 -right-4 w-96 h-96 bg-secondary rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-blob animation-delay-2000"></div>
 
-         {/* Floating Connecting Lines */}
-        <div className="absolute top-1/4 left-10 w-64 h-64 pointer-events-none opacity-20">
-            <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full animate-pulse">
-                <path d="M10 10 L100 50 L180 20" stroke="#00f2ff" strokeWidth="2" strokeLinecap="round"/>
-                <circle cx="10" cy="10" r="4" fill="#00f2ff" />
-                <circle cx="100" cy="50" r="4" fill="#00f2ff" />
-                <circle cx="180" cy="20" r="4" fill="#00f2ff" />
-            </svg>
-        </div>
-        <div className="absolute bottom-1/4 right-10 w-80 h-80 pointer-events-none opacity-20">
-             <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full animate-float">
-                <path d="M20 180 L80 120 L160 160" stroke="#7000ff" strokeWidth="2" strokeLinecap="round"/>
-                <circle cx="20" cy="180" r="4" fill="#7000ff" />
-                <circle cx="80" cy="120" r="4" fill="#7000ff" />
-                <circle cx="160" cy="160" r="4" fill="#7000ff" />
-            </svg>
-        </div>
+         {/* Floating Connecting Lines REMOVED here */}
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
@@ -276,6 +268,7 @@ const App = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="reveal w-full grid grid-cols-1 md:grid-cols-2 gap-8">
               
+            {/* Who We Are - Full Width Card */}
             <div className="glass-card p-10 rounded-3xl border border-white/10 relative overflow-hidden group hover:scale-[1.01] transition-transform duration-300 md:col-span-2">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/30 rounded-full blur-3xl animate-pulse"></div>
@@ -286,6 +279,7 @@ const App = () => {
               </p>
             </div>
 
+            {/* Vision */}
             <div className="glass-card p-10 rounded-3xl border border-white/10 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 hover:border-secondary/50 h-full">
               <div className="absolute inset-0 bg-gradient-to-br from-secondary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="absolute top-0 right-0 w-40 h-40 bg-secondary/20 rounded-full blur-3xl -mr-10 -mt-10 animate-blob"></div>
@@ -297,6 +291,7 @@ const App = () => {
               </p>
             </div>
 
+            {/* Mission */}
             <div className="glass-card p-10 rounded-3xl border border-white/10 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 hover:border-green-500/50 h-full">
               <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="absolute bottom-0 right-0 w-40 h-40 bg-green-500/20 rounded-full blur-3xl -mr-10 -mb-10 animate-blob animation-delay-2000"></div>
@@ -711,7 +706,7 @@ const App = () => {
         </div>
       </section>
 
-      {/* Contact Section */}
+      {/* Contact Section - Redesigned as requested */}
       <section id="contact" className="py-24 relative overflow-hidden bg-dark-lighter">
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-primary/10 to-secondary/10 rounded-full blur-[100px] -z-10"></div>
 
