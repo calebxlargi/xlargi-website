@@ -195,8 +195,15 @@ const App = () => {
 
       {/* Hero Section */}
       <section id="home" className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
-        {/* Removed video background */}
-        <div className="absolute inset-0 bg-gradient-to-b from-dark/60 via-dark/30 to-dark"></div>
+        {/* Video Background */}
+        <div className="absolute inset-0 w-full h-full z-0">
+          <video className="w-full h-full object-cover opacity-30" autoPlay muted loop playsInline>
+            <source src="https://njwscgft917wos7z.public.blob.vercel-storage.com/xlargi_hero.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+          {/* Overlay gradient - Made lighter to show video more */}
+          <div className="absolute inset-0 bg-gradient-to-b from-dark/60 via-dark/30 to-dark"></div>
+        </div>
 
         {/* Canvas Background */}
         <div id="canvas-container" className="opacity-20 mix-blend-screen">
@@ -206,6 +213,24 @@ const App = () => {
         {/* Ambient Glow Elements */}
         <div className="absolute top-0 -left-4 w-96 h-96 bg-primary rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-blob"></div>
         <div className="absolute top-0 -right-4 w-96 h-96 bg-secondary rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-blob animation-delay-2000"></div>
+
+         {/* Floating Connecting Lines */}
+        <div className="absolute top-1/4 left-10 w-64 h-64 pointer-events-none opacity-20">
+            <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full animate-pulse">
+                <path d="M10 10 L100 50 L180 20" stroke="#00f2ff" strokeWidth="2" strokeLinecap="round"/>
+                <circle cx="10" cy="10" r="4" fill="#00f2ff" />
+                <circle cx="100" cy="50" r="4" fill="#00f2ff" />
+                <circle cx="180" cy="20" r="4" fill="#00f2ff" />
+            </svg>
+        </div>
+        <div className="absolute bottom-1/4 right-10 w-80 h-80 pointer-events-none opacity-20">
+             <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full animate-float">
+                <path d="M20 180 L80 120 L160 160" stroke="#7000ff" strokeWidth="2" strokeLinecap="round"/>
+                <circle cx="20" cy="180" r="4" fill="#7000ff" />
+                <circle cx="80" cy="120" r="4" fill="#7000ff" />
+                <circle cx="160" cy="160" r="4" fill="#7000ff" />
+            </svg>
+        </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
@@ -668,7 +693,7 @@ const App = () => {
         </div>
       </section>
 
-      {/* Contact Section - Redesigned as requested */}
+      {/* Contact Section */}
       <section id="contact" className="py-24 relative overflow-hidden bg-dark-lighter">
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-primary/10 to-secondary/10 rounded-full blur-[100px] -z-10"></div>
 
