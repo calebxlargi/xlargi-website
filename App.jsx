@@ -1,6 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 const App = () => {
+  const videoRef = useRef(null);
+
   // Scroll Reveal Logic
   useEffect(() => {
     const revealElements = document.querySelectorAll('.reveal');
@@ -42,6 +44,15 @@ const App = () => {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Force Video Autoplay (Mobile Fix)
+  useEffect(() => {
+    if (videoRef.current) {
+        videoRef.current.play().catch(error => {
+            console.log("Autoplay prevented:", error);
+        });
+    }
   }, []);
 
   // Canvas Particle Animation
@@ -197,8 +208,15 @@ const App = () => {
       <section id="home" className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
         {/* Video Background */}
         <div className="absolute inset-0 w-full h-full z-0">
-          <video className="w-full h-full object-cover opacity-80" autoPlay muted loop playsInline>
-            <source src="https://njwscgft917wos7z.public.blob.vercel-storage.com/xlargi_hero_av1.webm" type="video/webm" />
+          <video 
+            ref={videoRef}
+            className="w-full h-full object-cover opacity-80" 
+            autoPlay 
+            muted 
+            loop 
+            playsInline
+          >
+            <source src="https://njwscgft917wos7z.public.blob.vercel-storage.com/xlargi_hero.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
           {/* Overlay gradient - Made lighter to show video more */}
@@ -693,7 +711,7 @@ const App = () => {
         </div>
       </section>
 
-      {/* Contact Section - Redesigned as requested */}
+      {/* Contact Section */}
       <section id="contact" className="py-24 relative overflow-hidden bg-dark-lighter">
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-primary/10 to-secondary/10 rounded-full blur-[100px] -z-10"></div>
 
