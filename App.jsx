@@ -49,16 +49,9 @@ const App = () => {
   // Force Video Autoplay (Mobile Fix)
   useEffect(() => {
     if (videoRef.current) {
-        // Attempt to play video programmatically to bypass some mobile restrictions
-        const playPromise = videoRef.current.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(error => {
-                console.log("Autoplay prevented:", error);
-                // Fallback: Mute again and try playing (sometimes helps)
-                videoRef.current.muted = true;
-                videoRef.current.play();
-            });
-        }
+        videoRef.current.play().catch(error => {
+            console.log("Autoplay prevented:", error);
+        });
     }
   }, []);
 
@@ -223,7 +216,6 @@ const App = () => {
             loop 
             playsInline
           >
-            {/* Using the .mp4 version which is more compatible for mobile autoplay */}
             <source src="https://njwscgft917wos7z.public.blob.vercel-storage.com/xlargi_hero.mp4" type="video/mp4" />
             Your browser does not support the video tag.
           </video>
@@ -239,8 +231,6 @@ const App = () => {
         {/* Ambient Glow Elements */}
         <div className="absolute top-0 -left-4 w-96 h-96 bg-primary rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-blob"></div>
         <div className="absolute top-0 -right-4 w-96 h-96 bg-secondary rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-blob animation-delay-2000"></div>
-
-         {/* Floating Connecting Lines REMOVED here */}
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
@@ -268,7 +258,6 @@ const App = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="reveal w-full grid grid-cols-1 md:grid-cols-2 gap-8">
               
-            {/* Who We Are - Full Width Card */}
             <div className="glass-card p-10 rounded-3xl border border-white/10 relative overflow-hidden group hover:scale-[1.01] transition-transform duration-300 md:col-span-2">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/30 rounded-full blur-3xl animate-pulse"></div>
@@ -279,7 +268,6 @@ const App = () => {
               </p>
             </div>
 
-            {/* Vision */}
             <div className="glass-card p-10 rounded-3xl border border-white/10 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 hover:border-secondary/50 h-full">
               <div className="absolute inset-0 bg-gradient-to-br from-secondary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="absolute top-0 right-0 w-40 h-40 bg-secondary/20 rounded-full blur-3xl -mr-10 -mt-10 animate-blob"></div>
@@ -291,7 +279,6 @@ const App = () => {
               </p>
             </div>
 
-            {/* Mission */}
             <div className="glass-card p-10 rounded-3xl border border-white/10 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 hover:border-green-500/50 h-full">
               <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div className="absolute bottom-0 right-0 w-40 h-40 bg-green-500/20 rounded-full blur-3xl -mr-10 -mb-10 animate-blob animation-delay-2000"></div>
@@ -318,7 +305,7 @@ const App = () => {
               New Generation Technology
             </div>
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-              ADDS <span className="text-gray-500 font-light">Damage Detection</span>
+              ADDS (Automatic Container Damage Detection)
             </h2>
             <p className="text-2xl text-gray-300 font-light italic max-w-3xl mx-auto mb-8">
               "Where others glance, we see <span className="text-gradient font-bold not-italic">everything</span>."
