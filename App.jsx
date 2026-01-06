@@ -803,7 +803,7 @@ const App = () => {
       <footer className="bg-black py-12 border-t border-white/5 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center relative z-10">
           <div className="mb-4 md:mb-0">
-            <span className="text-2xl font-bold tracking-tighter text-white">XLARGI SDN. BHD.<span className="text-primary">.</span></span>
+            <span className="text-2xl font-bold tracking-tighter text-white">XLARGI<span className="text-primary">.</span></span>
             <p className="text-gray-500 text-sm mt-2">© 2026 XLARGI SDN. BHD. All rights reserved.</p>
           </div>
           <div className="flex space-x-6 text-sm text-gray-500">
