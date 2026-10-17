@@ -14,6 +14,7 @@ export function createTerminalScene(renderer, mobile, manager) {
   const batches = new Map();
   const unitBox = new THREE.BoxGeometry(1, 1, 1);
   const unitCylinder = new THREE.CylinderGeometry(1, 1, 1, 12);
+  const distantCylinder = new THREE.CylinderGeometry(1, 1, 1, 6);
   const matrix = new THREE.Matrix4();
   const position = new THREE.Vector3();
   const scale = new THREE.Vector3();
@@ -33,21 +34,16 @@ export function createTerminalScene(renderer, mobile, manager) {
     draw(canvas.getContext('2d'), width, height);
     return texture(canvas);
   }
-  const paintWear = canvasTexture(2048, 2048, (ctx, w, h) => {
-    ctx.scale(4,4);w=h=512;
-    ctx.fillStyle = '#dddcd7'; ctx.fillRect(0, 0, w, h);
-    for (let i = 0; i < 14000; i++) {
-      const v = 100 + Math.floor(random() * 150);
-      ctx.fillStyle = `rgba(${v},${v - 3},${v - 8},${random() * 0.15})`;
-      ctx.fillRect(random() * w, random() * h, random() * 3, random() * 17);
-    }
-    const shade = ctx.createLinearGradient(0, 0, 0, h);
-    shade.addColorStop(0, '#201b100d'); shade.addColorStop(0.7, '#201b1000'); shade.addColorStop(1, '#241b1440');
-    ctx.fillStyle = shade; ctx.fillRect(0, 0, w, h);
-    for (let i = 0; i < 160; i++) {
-      ctx.fillStyle = '#69503a38'; ctx.fillRect(random() * w, random() * h, 1 + random() * 3, 5 + random() * 85);
-    }
-  });
+  const assetLoader = new THREE.TextureLoader(manager);
+  function loadTexture(path, color = true) {
+    const map = assetLoader.load(path, loaded => { if (disposed) loaded.dispose(); });
+    map.colorSpace = color ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+    map.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    textures.add(map); return map;
+  }
+  const paintWear = loadTexture('/textures/industrial-wear.webp');
+  const backgroundWear = loadTexture('/textures/cargo-wear.webp');
+  const backgroundNormal = loadTexture('/textures/cargo-normal.png', false);
   const asphalt = canvasTexture(1024, 1024, (ctx, w, h) => {
     const data = ctx.createImageData(w, h);
     for (let i = 0; i < data.data.length; i += 4) {
@@ -171,7 +167,9 @@ export function createTerminalScene(renderer, mobile, manager) {
     position.copy(a).add(b).multiplyScalar(0.5);
     rotation.setFromUnitVectors(axis, direction.clone().normalize());
     scale.set(radius, direction.length(), radius);
-    matrix.compose(position, rotation, scale); instance(unitCylinder, parent, material, matrix);
+    matrix.compose(position, rotation, scale);
+    const distant=parent.userData.lowDetail || (parent===scene && Math.max(a.z,b.z)<-40);
+    instance(distant ? distantCylinder : unitCylinder, parent, material, matrix);
   }
   function mesh(parent, geometry, material, at = [0, 0, 0]) {
     // Share repeated primitive geometry instead of allocating a copy for every bolt/lens.
@@ -252,9 +250,6 @@ export function createTerminalScene(renderer, mobile, manager) {
   const stripe = mat('#d2c49a', 0.85, 0);
   for (const z of [-5, 5]) box(scene, [95, 0.012, 0.09], [0, 0.02, z], stripe);
   for (let x = -45; x < 50; x += 5) box(scene, [2, 0.012, 0.08], [x, 0.022, 0], stripe);
-  // Marked background traffic lane uses the same gridded asphalt as the inspection lane.
-  for(const z of [-21.5,-14.5])box(scene,[180,0.012,0.09],[0,0.025,z],stripe);
-  for(let x=-90;x<90;x+=5)box(scene,[2.1,0.012,0.08],[x,0.026,-18],stripe);
 
   // Corrugated ISO container sides and roof are actual geometry, not painted stripes.
   function containerGeometry() {
@@ -280,60 +275,31 @@ export function createTerminalScene(renderer, mobile, manager) {
     return geometry;
   }
   const containerGeo = containerGeometry();
+  const distantContainerGeo = new THREE.BoxGeometry(12.2,2.9,2.44);
+  distantContainerGeo.translate(0,1.45,0);
+  const distantPaints = paints.map(source => {
+    const material=source.clone();material.map=backgroundWear;material.bumpMap=null;
+    material.normalMap=backgroundNormal;material.normalScale.set(0.7,0.7);
+    materials.add(material);return material;
+  });
   // Shipping-line markings based on the supplied container-stack reference.
   const shippingNames=['MAERSK','COSCO','EVERGREEN','“K” LINE','Hapag-Lloyd','HYUNDAI','CHINA SHIPPING','P&O','CMA CGM','OOCL','ONE','MSC','YANG MING','WAN HAI'];
-  const shippingMaterials=shippingNames.map((name,index)=>{
-    const label=canvasTexture(2048,512,(ctx,w,h)=>{
-      ctx.scale(2048/1536,512/320);w=1536;h=320;
-      const darkInk=index===1||index===4||index===11||index===12;
-      const ink=darkInk?'#12324f':'#edf1ec';ctx.fillStyle=ink;
-      ctx.textAlign='center';ctx.textBaseline='middle';
-      if(index===0){
-        ctx.fillStyle='#80c7d7';ctx.beginPath();ctx.roundRect(15,30,250,250,18);ctx.fill();
-        ctx.fillStyle='#f4f9f9';ctx.beginPath();for(let i=0;i<14;i++){const angle=i*Math.PI/7-Math.PI/2;const radius=i%2?42:105;const x=140+Math.cos(angle)*radius,y=155+Math.sin(angle)*radius;i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.closePath();ctx.fill();
-        ctx.fillStyle='#172b3e';ctx.font='bold 164px Arial';ctx.fillText(name,930,169,1180);
-      }else if(index===1){
-        ctx.font='bold 190px Arial';ctx.fillText('C O S C O',w/2,165,1460);
-      }else if(index===3){
-        ctx.font='bold 190px Georgia';ctx.fillText(name,w/2,165,1450);
-      }else if(index===4){
-        ctx.beginPath();ctx.moveTo(40,85);ctx.lineTo(150,85);ctx.lineTo(95,160);ctx.lineTo(155,235);ctx.lineTo(45,235);ctx.lineTo(5,160);ctx.closePath();ctx.fill();
-        ctx.beginPath();ctx.moveTo(160,85);ctx.lineTo(235,85);ctx.lineTo(180,160);ctx.lineTo(240,235);ctx.lineTo(165,235);ctx.lineTo(120,160);ctx.closePath();ctx.fill();
-        ctx.font='bold 145px Arial';ctx.fillText(name,925,169,1200);
-      }else if(index===5){
-        ctx.fillStyle='#e6c75c';ctx.beginPath();ctx.moveTo(110,47);ctx.lineTo(215,262);ctx.lineTo(5,262);ctx.closePath();ctx.fill();
-        ctx.fillStyle='#ebf5f5';ctx.font='bold 150px Arial';ctx.fillText('H Y U N D A I',930,170,1190);
-      }else if(index===7){
-        ctx.fillStyle='#e7eff4';ctx.font='bold 215px Georgia';ctx.fillText(name,w/2,165,1400);
-      }else if(index===8){
-        ctx.strokeStyle='#edf1ec';ctx.lineWidth=10;ctx.beginPath();ctx.moveTo(340,60);ctx.quadraticCurveTo(730,-40,1190,60);ctx.stroke();ctx.font='bold 175px Arial';ctx.fillText(name,w/2,190,1450);
-      }else if(index===10){
-        ctx.font='bold 255px Arial';ctx.fillText(name,w/2,165,1350);
-      }else if(index===11){
-        ctx.font='bold 245px Georgia';ctx.fillText('m',w/2,125);ctx.font='bold 125px Arial';ctx.fillText('sc',w/2,246);
-      }else{
-        ctx.font=`bold ${index===6||index===12?125:170}px Arial`;ctx.fillText(name,w/2,165,1480);
-      }
-    });
-    return mat('#ffffff',0.78,0.05,{map:label,transparent:true,alphaTest:0.08,depthWrite:false,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
-  });
-  function shippingSkin(){
-    const vertices=[],uv=[];const left=-4.9,right=4.9,bottom=0.9,top=2.05;
-    for(const side of [-1,1])for(let i=24;i<216;i++){
-      const x0=-6.1+i*12.2/240,x1=-6.1+(i+1)*12.2/240;
-      if(x0<left||x1>right)continue;
-      const wave=n=>{const phase=n%6;return phase===0||phase===5?0:phase===1||phase===4?0.025:0.06;};
-      const z0=side*(1.22+wave(i)+0.007),z1=side*(1.22+wave(i+1)+0.007);
-      vertices.push(x0,bottom,z0,x1,bottom,z1,x0,top,z0,x1,bottom,z1,x1,top,z1,x0,top,z0);
-      const a=side>0?(x0-left)/(right-left):1-(x0-left)/(right-left),b=side>0?(x1-left)/(right-left):1-(x1-left)/(right-left);
-      uv.push(a,0,b,0,a,1,b,0,b,1,a,1);
+  const shippingAtlas=loadTexture('/textures/shipping-marks.webp');
+  const shippingMaterial=mat('#ffffff',0.78,0.05,{map:shippingAtlas,normalMap:backgroundNormal,transparent:true,alphaTest:0.08,depthWrite:false,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+  const shippingGeometries=shippingNames.map((_,index)=>{
+    const vertices=[],uv=[],col=index%4,row=Math.floor(index/4);
+    const minU=(col*512+8)/2048,maxU=(col*512+504)/2048;
+    const minV=1-(row*256+248)/1024,maxV=1-(row*256+8)/1024;
+    for(const side of [-1,1]){
+      const z=side*1.231,u0=side>0?minU:maxU,u1=side>0?maxU:minU;
+      vertices.push(-4.9,.9,z,4.9,.9,z,-4.9,2.05,z,4.9,.9,z,4.9,2.05,z,-4.9,2.05,z);
+      uv.push(u0,minV,u1,minV,u0,maxV,u1,minV,u1,maxV,u0,maxV);
     }
-    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.computeVertexNormals();return g;
-  }
-  const shippingGeometry=shippingSkin();
+    const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geometry.computeVertexNormals();return geometry;
+  });
   const cargoStencilMaterials=['#edf0df','#20323d'].map(ink=>{
-    const map=canvasTexture(2048,2048,(ctx,w,h)=>{
-      ctx.scale(2,2);ctx.fillStyle=ink;ctx.font='bold 54px monospace';
+    const map=canvasTexture(1024,1024,(ctx,w,h)=>{
+      ctx.fillStyle=ink;ctx.font='bold 54px monospace';
       ctx.fillText('TCLU 481029 3',490,110);ctx.font='37px monospace';ctx.fillText('45G1',490,170);
       for(const [i,line] of ['MAX GROSS','30 480 KG','TARE 3 800 KG','NET 26 680 KG','CU.CAP 76.4'].entries())ctx.fillText(line,485,420+i*67);
       ctx.fillStyle='#d3b43a';ctx.fillRect(135,400,180,180);ctx.fillStyle='#252b2b';ctx.font='bold 30px sans-serif';ctx.fillText('CAUTION',153,445);ctx.fillText('9′6″ HIGH',140,500);ctx.fillText('CONTAINER',140,548);
@@ -346,17 +312,19 @@ export function createTerminalScene(renderer, mobile, manager) {
   function container(parent, at, material, detailed = false, ratio = 1) {
     const [x, y, z] = at;
     matrix.compose(new THREE.Vector3(x, y, z), new THREE.Quaternion(), new THREE.Vector3(ratio, 1, 1));
-    instance(containerGeo, parent, material, matrix);
+    instance(detailed ? containerGeo : distantContainerGeo, parent, detailed ? material : distantPaints[paints.indexOf(material)] || material, matrix);
     if(!detailed){
       // Light boxes receive dark ink, and dark boxes receive white shipping marks.
       const paintIndex=paints.indexOf(material);
       const choices=paintIndex===2||paintIndex===7?[0,1,9,12]:paintIndex===3||paintIndex===6?[4,11]:paintIndex===10?[10]:paintIndex===8?[2,6]:paintIndex===9?[8,13]:[3,5,7,8,9,13];
       const brand=choices[shippingIndex++%choices.length];
-      instance(shippingGeometry,parent,shippingMaterials[brand],matrix);
+      instance(shippingGeometries[brand],parent,shippingMaterial,matrix);
       const endX=x-6.15*ratio;
       const ink=material.color.getHexString()==='b6bbb8'||material===paints[7]||material===paints[3]?1:0;
       const markMatrix=new THREE.Matrix4().makeTranslation(endX-0.025,y+1.45,z);
       instance(cargoStencilGeometry,parent,cargoStencilMaterials[ink],markMatrix);
+      // Far cargo doors and corner frames are represented by textures, not tiny hardware.
+      if(parent.userData.lowDetail)return;
       box(parent,[0.035,2.61,0.035],[endX,y+1.45,z],black);
       for(const offset of [-0.84,-0.3,0.3,0.84]){
         beam(parent,[endX-0.035,y+0.18,z+offset],[endX-0.035,y+2.73,z+offset],0.018,galvanized);
@@ -379,35 +347,6 @@ export function createTerminalScene(renderer, mobile, manager) {
         for (const h of [0.3, 1.3, 2.6]) box(parent, [0.09, 0.07, 0.13], [x - 6.16, y + h, z + offset], chrome);
         box(parent, [0.11, 0.055, 0.27], [x - 6.19, y + 1.28, z + offset + 0.09], chrome);
       }
-    }
-  }
-  // Mixed 20 ft / 40 ft stacks, stepped tops and open aisles follow the supplied terminal references.
-  for(let row=0;row<3;row++)for(let col=0;col<10;col++){
-    if(col===4||col===5)continue;
-    const count=[2,4,3,2,3,4,2,3,4,2][(col+row)%10];
-    const x=(col-4.5)*13,z=-24-row*5;
-    for(let level=0;level<count;level++){
-      const y=0.03+level*2.95;
-      const shortBoxes=(col+row)%3===1;
-      if(shortBoxes){
-        for(const shift of [-3.12,3.12])container(scene,[x+shift,y,z],paints[(col*3+row+level+(shift>0?2:0))%paints.length],false,0.5);
-      }else container(scene,[x,y,z],paints[(col*2+row*3+level)%paints.length]);
-    }
-  }
-  // End-on boxes add visible doors, seals, locking rods and small stencils to the foreground stacks.
-  const stackDoorMap=canvasTexture(2048,3072,ctx=>{
-    ctx.scale(4,4);
-    ctx.fillStyle='#e6e6d7';ctx.font='bold 33px monospace';ctx.fillText('TCLU 481029 3',215,65);ctx.font='25px monospace';ctx.fillText('22G1',215,105);
-    ctx.fillText('MAX GROSS',210,300);ctx.fillText('30 480 KG',210,337);ctx.fillText('TARE 2 250 KG',210,390);ctx.fillText('CU.CAP 33.2',210,430);
-    ctx.fillStyle='#dbc141';ctx.fillRect(45,310,120,100);ctx.fillStyle='#28313a';ctx.font='bold 18px monospace';ctx.fillText('CAUTION',60,345);ctx.fillText('HIGH CUBE',53,375);
-  });
-  for(const x of [-23,28]){
-    for(let level=0;level<2;level++){
-      const group=new THREE.Group();group.position.set(x,0.03+level*2.95,-26.2);group.rotation.y=Math.PI/2;scene.add(group);
-      const paint=paints[(level+(x>0?9:0))%paints.length];container(group,[0,0,0],paint,false,0.5);
-      box(group,[0.03,2.68,2.2],[-3.075,1.45,0],black);box(group,[0.04,2.61,2.12],[-3.105,1.45,0],paint);
-      for(const z of [-0.92,-0.35,0.35,0.92])beam(group,[-3.15,0.15,z],[-3.15,2.77,z],0.022,steel);
-      decal(group,stackDoorMap,2,2.5,[-3.17,1.47,0],-Math.PI/2);
     }
   }
   // Reference gantry: one shared plinth per side, square truss towers, and rear scanner columns.
@@ -980,7 +919,7 @@ export function createTerminalScene(renderer, mobile, manager) {
     // Trolley, pulleys and a detailed suspended lifting spreader.
     box(scene,[7.4,0.5,3.6],[x,32.6,z-20],safetyYellow);
     for(const dx of [-3.1,3.1])for(const dz of [-1.35,1.35])beam(scene,[x+dx-0.12,32.45,z-20+dz],[x+dx+0.12,32.45,z-20+dz],0.35,black);
-    const hoist=new THREE.Group();hoist.position.set(x,14,z-20);scene.add(hoist);
+    const hoist=new THREE.Group();hoist.userData.lowDetail=true;hoist.position.set(x,14,z-20);scene.add(hoist);
     for(const dx of [-2.7,2.7])for(const dz of [-1,1])beam(scene,[x+dx,32.4,z-20+dz],[x+dx,15.4,z-20+dz],0.023,steel);
     for(const side of [-1,1]){
       box(hoist,[12.5,0.42,0.32],[0,0.18,side*1.2],cranePaint);
@@ -1010,7 +949,7 @@ export function createTerminalScene(renderer, mobile, manager) {
     for(let spoke=0;spoke<24;spoke++){const t=spoke*Math.PI/12;beam(scene,[x+4.7,8,z+8.1],[x+4.7+Math.cos(t),8+Math.sin(t),z+8.1],0.018,steel);}
     for(const dz of [-42,-25,-10,7,20])box(scene,[0.35,0.1,0.5],[x+3.7,32.9,z+dz],glow);
   }
-  [-58,-25,20,56].forEach((x,index)=>crane(x,-52,index));
+  [-52,49].forEach((x,index)=>crane(x,-52,index));
   // Ocean-going container ships: curved hull sections, full-width bridge and lashing frames.
   const hullRed=mat('#7f272d',0.74,0.28,{map:paintWear,bumpMap:paintWear,bumpScale:0.025});
   const hullLower=mat('#303c42',0.9,0.1,{map:paintWear});
@@ -1019,7 +958,7 @@ export function createTerminalScene(renderer, mobile, manager) {
   const bridgeGlass=mat('#3f6572',0.17,0.35,{envMapIntensity:0.65});
   const warmWindows=mat('#adbcad',0.45,0.1,{emissive:'#86968b',emissiveIntensity:0.18});
   function ship(x,z,index){
-    const vessel=new THREE.Group();vessel.position.set(x,0,z);scene.add(vessel);
+    const vessel=new THREE.Group();vessel.userData.lowDetail=true;vessel.position.set(x,0,z);scene.add(vessel);
     // Cross-sections narrow below the waterline and taper into a pointed bow.
     const sections=[[-43,4.2],[-39,7],[-31,8],[-12,8],[10,8],[26,7.5],[34,5.7],[41,2.6],[45,0.1]];
     function hullBand(bottom,top,bottomScale,topScale,material){
@@ -1122,15 +1061,6 @@ export function createTerminalScene(renderer, mobile, manager) {
     combined.castShadow = first.castShadow; combined.receiveShadow = true;
     combined.computeBoundingSphere(); root.add(combined);
   }
-  // The secondary truck uses the full production mesh instead of a box cab and flat wheels.
-  const yardTruck=truck.clone(true);yardTruck.scale.setScalar(0.8);yardTruck.position.set(-18,0,-18);
-  const yardWheels=[];
-  yardTruck.traverse(object=>{
-    if(object.name==='truck-wheel')yardWheels.push(object);
-    if(object.material===mainPaint)object.material=paints[1];
-    if(object.material===brandMaterial)object.material=shippingMaterials[7];
-  });
-  scene.add(yardTruck);
   // Soft moving key and cool rim keep the inspection truck prominent along its route.
   const truckLighting = new THREE.Group();
   function truckSpot(color, intensity, source, target, angle) {
@@ -1165,8 +1095,6 @@ export function createTerminalScene(renderer, mobile, manager) {
       scanLights.forEach(light => { light.intensity = scanning ? 85 + Math.sin(elapsed * 9) * 4 : 8; });
       scanPlaneMat.opacity = scanning ? 0.035 : 0.008;
       floorSpill.intensity = scanning ? 18 : 2;
-      yardTruck.position.x = ((elapsed * 0.5 + 35) % 120) - 60;
-      yardWheels.forEach(wheel=>{wheel.rotation.z=-elapsed*0.5/(0.61*0.8);});
       const stage = THREE.MathUtils.clamp(progress, 0, 1) * 3;
       const i = Math.min(2, Math.floor(stage));
       const blend = THREE.MathUtils.smoothstep(stage - i, 0, 1);
