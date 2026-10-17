@@ -113,7 +113,15 @@ export default function App() {
         </section>
         <section id="automation" className="story-chapter" data-section>
           <div className="chapter-copy reveal"><p className="eyebrow">02 / CONNECTED OPERATIONS</p><h2>One movement.<br />Everything in sync.</h2><p>Connect gate, rail, and quay operations with OCR, automated identification, and systems that work together.</p><a className="text-link" href="#solutions">Discover terminal automation <Arrow /></a></div>
-          <div className="system-map"><span>GATE</span><i /><span>YARD</span><i /><span>QUAY</span><p>CONNECTED BY DESIGN</p></div>
+          <figure className="terminal-flow" aria-label="Terminal information flow from gate to yard to quay">
+            <figcaption><span className="eyebrow">ONE CONNECTED TERMINAL</span><h3>From arrival to vessel.</h3><p>Every handover carries the same container record.</p></figcaption>
+            <ol className="terminal-flow-stages">
+              <li><svg viewBox="0 0 48 40" aria-hidden="true"><path d="M6 35V7h36v28M3 35h12m18 0h12M6 14h36M14 7v7m20-7v7M18 35V24h12v11m-12-5h12" /></svg><span className="flow-step">01 / GATE</span><h4>Identify &amp; verify</h4><p>Capture container IDs and check entry details with OCR.</p></li>
+              <li><svg viewBox="0 0 48 40" aria-hidden="true"><path d="M4 35V22h19v13H4Zm21 0V22h19v13H25ZM14 20V7h20v13H14ZM9 25v7m5-7v7m5-7v7m11-7v7m5-7v7m5-7v7M19 10v7m5-7v7m5-7v7" /></svg><span className="flow-step">02 / YARD</span><h4>Track &amp; coordinate</h4><p>Link container locations with movement and job updates.</p></li>
+              <li><svg viewBox="0 0 48 40" aria-hidden="true"><path d="M3 27h42l-7 8H11l-8-8Zm8 0V17h24v10M16 17V4h23M16 9h17l6-5M33 9v10M3 39h42M20 21h5m3 0h4" /></svg><span className="flow-step">03 / QUAY</span><h4>Confirm the handover</h4><p>Identify crane moves and record vessel loading events.</p></li>
+            </ol>
+            <div className="terminal-flow-record"><span className="flow-record-dot" /><div><strong>Shared operational record</strong><p>Container ID · location · movement status</p></div></div>
+          </figure>
         </section>
         <section id="intelligence" className="story-chapter" data-section>
           <div className="chapter-copy reveal"><p className="eyebrow">03 / DATA INTO ACTION</p><h2>See the whole.<br />Act on what matters.</h2><p>From data science to purpose-built software, we connect the physical and digital worlds to help your teams make better decisions.</p><a className="text-link" href="#expertise">Explore our expertise <Arrow /></a></div>
@@ -130,7 +138,7 @@ export default function App() {
       </section>
       <section id="about" className="about-section section-pad" data-section>
         <p className="eyebrow reveal">XLARGI / EST. 2019 / MALAYSIA</p><h2 className="manifesto reveal">Complex challenges.<br /><span>Clear thinking.</span><br />Real-world impact.</h2>
-        <div className="about-bottom reveal"><NeuralGraphic /><div><p>We are a boutique consultancy and software development company helping enterprises untangle complex digital challenges.</p><p>From AI and IoT to integrated port systems, we bring engineering, strategy, and delivery together. Designed for your operation. Built for what comes next.</p><button className="pill" onClick={() => setContact(true)}>Meet your next partner <Arrow /></button></div></div>
+        <div className="about-bottom reveal"><NeuralGraphic /><div><p>We are a boutique consultancy and software development company helping enterprises untangle complex digital challenges.</p><p>From AI and IoT to integrated port systems, we bring engineering, strategy, and delivery together. Designed for your operation. Built for what comes next.</p></div></div>
       </section>
       <section id="expertise" className="expertise-section section-pad" data-section><div className="expertise-intro reveal"><p className="eyebrow">FROM FIRST CONVERSATION TO DAILY OPERATION</p><h2>We see it<br />through.</h2><p>One delivery partner for consultation, design, implementation, and ongoing support.</p></div><div className="expertise-list">{[
         ['01', 'Consult & design', 'Understand the challenge. Define the right architecture. Design around your business.'],
