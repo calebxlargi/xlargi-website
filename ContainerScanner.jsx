@@ -57,14 +57,15 @@ export default function ContainerScanner({ progressRef, onReady, onError, onPhas
         renderer?.dispose(); renderer?.domElement.remove();
       };
       try {
-        renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
-        let pixelRatio = Math.min(window.devicePixelRatio, mobile ? 1.5 : 2);
+        // Phones use native antialiasing in one render instead of five full-screen postprocessing passes.
+        renderer = new THREE.WebGLRenderer({ antialias: mobile, powerPreference: 'high-performance' });
+        let pixelRatio = Math.min(window.devicePixelRatio, mobile ? 1.25 : 2);
         renderer.setPixelRatio(pixelRatio);
         renderer.info.autoReset = false;
         renderer.outputColorSpace = THREE.SRGBColorSpace;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.05;
-        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.enabled = !mobile;
         renderer.shadowMap.type = THREE.PCFShadowMap;
         mount.appendChild(renderer.domElement);
         const failedAssets = [];
@@ -76,22 +77,27 @@ export default function ContainerScanner({ progressRef, onReady, onError, onPhas
         manager.itemEnd('terminal');
         const camera = new THREE.PerspectiveCamera(43, 1, 0.2, 450);
         // MSAA belongs on the offscreen target; canvas AA would duplicate its cost.
+        if (!mobile) {
         const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: Math.min(mobile ? 2 : 4, renderer.capabilities.maxSamples) });
         composer = new EffectComposer(renderer, target);
         composer.addPass(new RenderPass(terminal.scene, camera));
         antialias = new SMAAPass(); composer.addPass(antialias);
         output = new OutputPass(); composer.addPass(output);
+        }
+        let lastWidth = 0, lastHeight = 0;
         function resize() {
           const { width, height } = mount.getBoundingClientRect();
           if (!width || !height) return;
-          renderer.setSize(width, height); composer.setSize(width, height);
+          if (width === lastWidth && height === lastHeight) return;
+          lastWidth = width; lastHeight = height;
+          renderer.setSize(width, height); composer?.setSize(width, height);
           camera.aspect = width / height; camera.updateProjectionMatrix();
           dirty.current = true;
         }
         observer = new ResizeObserver(resize); observer.observe(mount); resize();
         onPhase('Loading textures and fonts');
         // SMAA's bundled lookup images load asynchronously, outside LoadingManager.
-        await Promise.all([assets, sceneAssets, antialias._areaTexture.image.decode(), antialias._searchTexture.image.decode()]);
+        await Promise.all([assets, sceneAssets, ...(antialias ? [antialias._areaTexture.image.decode(), antialias._searchTexture.image.decode()] : [])]);
         if (cancelled) return;
         if (failedAssets.length) throw new Error('A terminal texture failed to load');
         onPhase('Preparing lighting');
@@ -103,7 +109,8 @@ export default function ContainerScanner({ progressRef, onReady, onError, onPhas
         if (cancelled) return;
         let renderedFrames = 0;
         function renderFrame() {
-          renderer.info.reset(); composer.render();
+          renderer.info.reset();
+          if (composer) composer.render(); else renderer.render(terminal.scene, camera);
           if (import.meta.env.DEV) mount.dataset.renderedFrames = String(++renderedFrames);
         }
         renderFrame();
@@ -112,7 +119,7 @@ export default function ContainerScanner({ progressRef, onReady, onError, onPhas
         if (cancelled) return;
         clearTimeout(watchdog);
         mount.dataset.sceneState = 'ready';
-        if (import.meta.env.DEV) console.info('XLARGI scene ready', JSON.stringify({ initializationMs: Math.round(performance.now() - started), drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, textures: renderer.info.memory.textures }));
+        if (import.meta.env.DEV) console.info('XLARGI scene ready', JSON.stringify({ initializationMs: Math.round(performance.now() - started), drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, textures: renderer.info.memory.textures, quality: mobile ? 'mobile-native-aa' : 'desktop-smaa', pixelRatio }));
         setInitialized(true); onReady();
         let visible = true, elapsed = 0, previous = 0, lastRendered = 0, lastProgress = -1;
         let frameTotal = 0, frameCount = 0;
@@ -122,25 +129,28 @@ export default function ContainerScanner({ progressRef, onReady, onError, onPhas
         intersection = new IntersectionObserver(entries => {
           entries.forEach(entry => entry.isIntersecting ? visibleSections.add(entry.target) : visibleSections.delete(entry.target));
           visible = visibleSections.size > 0;
+          if (mobile && !visible) mount.dataset.sceneActivity = 'idle';
           setSceneVisible(visible); dirty.current = true;
         });
-        document.querySelectorAll('.story, #about, #expertise').forEach(section => intersection.observe(section));
+        document.querySelectorAll(mobile ? '.story' : '.story, #about, #expertise').forEach(section => intersection.observe(section));
         renderer.setAnimationLoop(time => {
           const delta = previous ? Math.min((time - previous) / 1000, 0.05) : 0;
           previous = time;
-          if (!visible || document.hidden) { lastRendered = 0; return; }
+          if (!visible || document.hidden || suspendedRef.current) { lastRendered = 0; return; }
           const animated = !pauseRef.current && !reduced.matches && !suspendedRef.current;
           if (animated) elapsed += delta;
           const progress = progressRef.current;
           if (!animated && progress === lastProgress && !dirty.current) { lastRendered = 0; return; }
           if (lastRendered && time - lastRendered < interval - 1) return;
-          // Reduce render resolution only on sustained slow devices. MSAA/SMAA stay enabled.
+          // Reduce resolution sooner on slow phones; native antialiasing stays enabled.
           if (animated && lastRendered) {
             frameTotal += time - lastRendered; frameCount++;
-            if (frameCount === 90) {
-              if (frameTotal / frameCount > (mobile ? 46 : 27) && pixelRatio > (mobile ? 1 : 1.25)) {
+            if (frameCount === (mobile ? 30 : 90)) {
+              if (frameTotal / frameCount > (mobile ? 40 : 27) && pixelRatio > (mobile ? 1 : 1.25)) {
                 pixelRatio = Math.max(mobile ? 1 : 1.25, pixelRatio - 0.25);
-                renderer.setPixelRatio(pixelRatio); composer.setPixelRatio(pixelRatio); resize();
+                renderer.setPixelRatio(pixelRatio); composer?.setPixelRatio(pixelRatio);
+                // Pixel ratio changes resize the drawing buffer even when CSS dimensions are unchanged.
+                lastWidth = 0; resize();
               }
               frameTotal = 0; frameCount = 0;
             }

@@ -52,25 +52,38 @@ export default function App() {
   const progressRef = useRef(0);
   const story = useRef(null);
   useEffect(() => {
+    let scrollFrame = 0;
+    let storyTop = 0, storyRange = 1;
+    const updateProgress = () => {
+      scrollFrame = 0;
+      progressRef.current = Math.max(0, Math.min(1, (window.scrollY - storyTop) / storyRange));
+    };
     const onScroll = () => {
+      if (!scrollFrame) scrollFrame = requestAnimationFrame(updateProgress);
+    };
+    const measureStory = () => {
       const element = story.current;
       if (!element) return;
-      progressRef.current = Math.max(0, Math.min(1, -element.getBoundingClientRect().top / (element.offsetHeight - window.innerHeight)));
+      storyTop = element.getBoundingClientRect().top + window.scrollY;
+      storyRange = Math.max(1, element.offsetHeight - document.documentElement.clientHeight);
+      onScroll();
     };
-    onScroll();
+    const storySize = new ResizeObserver(measureStory);
+    if (story.current) storySize.observe(story.current);
+    measureStory();
     const initialAnchor = requestAnimationFrame(() => {
       const target = document.getElementById(window.location.hash.slice(1));
       if (target) target.scrollIntoView({ behavior: 'instant', block: 'start' });
     });
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
+    window.addEventListener('resize', measureStory);
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => { if (entry.isIntersecting) setActive(entry.target.id); });
     }, { rootMargin: '-25% 0px -45% 0px', threshold: 0 });
     document.querySelectorAll('[data-section]').forEach(section => observer.observe(section));
     const reveal = new IntersectionObserver(entries => entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('is-visible'); reveal.unobserve(entry.target); } }), { threshold: 0.1 });
     document.querySelectorAll('.reveal').forEach(element => reveal.observe(element));
-    return () => { cancelAnimationFrame(initialAnchor); window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); observer.disconnect(); reveal.disconnect(); };
+    return () => { cancelAnimationFrame(initialAnchor); cancelAnimationFrame(scrollFrame); storySize.disconnect(); window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', measureStory); observer.disconnect(); reveal.disconnect(); };
   }, []);
   useEffect(() => {
     if (!menu) return;
