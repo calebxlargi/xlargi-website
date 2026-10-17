@@ -48,18 +48,32 @@ export default function ContainerScanner({ progressRef, onReady, onError, onPhas
       if (cancelled) return;
       const started = performance.now();
       onPhase('Building the terminal');
-      const mobile = window.innerWidth < 700;
+      // iPads can request a desktop user agent; keep their landscape view on the touch renderer.
+      const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const mobile = ios || window.innerWidth < 700 || (window.matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 900);
+      let lastScrollTime = -Infinity;
+      const noteScroll = () => { lastScrollTime = performance.now(); };
+      if (mobile) window.addEventListener('scroll', noteScroll, { passive: true });
+      let resizeTimer;
+      const contextLost = event => {
+        event.preventDefault();
+        renderer?.setAnimationLoop(null);
+        if (!cancelled) onError();
+      };
       let renderer, terminal, composer, antialias, output, observer, intersection;
       dispose = () => {
         renderer?.setAnimationLoop(null);
+        clearTimeout(resizeTimer);
+        window.removeEventListener('scroll', noteScroll);
+        renderer?.domElement.removeEventListener('webglcontextlost', contextLost);
         observer?.disconnect(); intersection?.disconnect();
         antialias?.dispose(); output?.dispose(); composer?.dispose(); terminal?.dispose();
         renderer?.dispose(); renderer?.domElement.remove();
       };
       try {
         // Phones use native antialiasing in one render instead of five full-screen postprocessing passes.
-        renderer = new THREE.WebGLRenderer({ antialias: mobile, powerPreference: 'high-performance' });
-        let pixelRatio = Math.min(window.devicePixelRatio, mobile ? 1.25 : 2);
+        renderer = new THREE.WebGLRenderer({ antialias: mobile, alpha: false, stencil: false, powerPreference: 'high-performance' });
+        let pixelRatio = Math.min(window.devicePixelRatio, ios ? 1 : mobile ? 1.25 : 2);
         renderer.setPixelRatio(pixelRatio);
         renderer.info.autoReset = false;
         renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -68,6 +82,7 @@ export default function ContainerScanner({ progressRef, onReady, onError, onPhas
         renderer.shadowMap.enabled = !mobile;
         renderer.shadowMap.type = THREE.PCFShadowMap;
         mount.appendChild(renderer.domElement);
+        renderer.domElement.addEventListener('webglcontextlost', contextLost);
         const failedAssets = [];
         const manager = new THREE.LoadingManager();
         const sceneAssets = new Promise(resolve => { manager.onLoad = resolve; });
@@ -94,7 +109,14 @@ export default function ContainerScanner({ progressRef, onReady, onError, onPhas
           camera.aspect = width / height; camera.updateProjectionMatrix();
           dirty.current = true;
         }
-        observer = new ResizeObserver(resize); observer.observe(mount); resize();
+        observer = new ResizeObserver(() => {
+          // Safari's browser chrome can emit a burst of resize events during a swipe.
+          // Coalesce buffer reallocations, but still handle rotation and split-view resizing.
+          if (!ios) { resize(); return; }
+          clearTimeout(resizeTimer);
+          resizeTimer = window.setTimeout(resize, 180);
+        });
+        observer.observe(mount); resize();
         onPhase('Loading textures and fonts');
         // SMAA's bundled lookup images load asynchronously, outside LoadingManager.
         await Promise.all([assets, sceneAssets, ...(antialias ? [antialias._areaTexture.image.decode(), antialias._searchTexture.image.decode()] : [])]);
@@ -119,7 +141,7 @@ export default function ContainerScanner({ progressRef, onReady, onError, onPhas
         if (cancelled) return;
         clearTimeout(watchdog);
         mount.dataset.sceneState = 'ready';
-        if (import.meta.env.DEV) console.info('XLARGI scene ready', JSON.stringify({ initializationMs: Math.round(performance.now() - started), drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, textures: renderer.info.memory.textures, quality: mobile ? 'mobile-native-aa' : 'desktop-smaa', pixelRatio }));
+        if (import.meta.env.DEV) console.info('XLARGI scene ready', JSON.stringify({ initializationMs: Math.round(performance.now() - started), drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, textures: renderer.info.memory.textures, quality: ios ? 'ios-native-aa' : mobile ? 'mobile-native-aa' : 'desktop-smaa', pixelRatio }));
         setInitialized(true); onReady();
         let visible = true, elapsed = 0, previous = 0, lastRendered = 0, lastProgress = -1;
         let frameTotal = 0, frameCount = 0;
@@ -138,12 +160,15 @@ export default function ContainerScanner({ progressRef, onReady, onError, onPhas
           previous = time;
           if (!visible || document.hidden || suspendedRef.current) { lastRendered = 0; return; }
           const animated = !pauseRef.current && !reduced.matches && !suspendedRef.current;
-          if (animated) elapsed += delta;
+          const scrolling = mobile && performance.now() - lastScrollTime < 180;
+          // Give touch scrolling priority over autonomous truck and water animation.
+          if (animated && !scrolling) elapsed += delta;
           const progress = progressRef.current;
           if (!animated && progress === lastProgress && !dirty.current) { lastRendered = 0; return; }
-          if (lastRendered && time - lastRendered < interval - 1) return;
+          const frameInterval = scrolling ? 1000 / 20 : interval;
+          if (lastRendered && time - lastRendered < frameInterval - 1) return;
           // Reduce resolution sooner on slow phones; native antialiasing stays enabled.
-          if (animated && lastRendered) {
+          if (animated && !scrolling && lastRendered) {
             frameTotal += time - lastRendered; frameCount++;
             if (frameCount === (mobile ? 30 : 90)) {
               if (frameTotal / frameCount > (mobile ? 40 : 27) && pixelRatio > (mobile ? 1 : 1.25)) {
@@ -155,7 +180,11 @@ export default function ContainerScanner({ progressRef, onReady, onError, onPhas
               frameTotal = 0; frameCount = 0;
             }
           }
-          terminal.update(elapsed, progress, camera); renderFrame();
+          try {
+            terminal.update(elapsed, progress, camera); renderFrame();
+          } catch {
+            renderer.setAnimationLoop(null); onError(); return;
+          }
           lastProgress = progress; dirty.current = false; lastRendered = time;
         });
       } catch {

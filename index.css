@@ -71,3 +71,13 @@
   .neural-graphic svg{filter:none}.neural-node{animation:none}
   .about-section .manifesto,.about-bottom p,.expertise-intro h2{text-shadow:none}
 }
+
+/* WebKit touch devices also include iPads in landscape. */
+@supports(-webkit-touch-callout:none){@media(pointer:coarse){
+  .story-scene{contain:strict;transform:translateZ(0)}
+  .pill,.telemetry,.about-bottom>div:last-child,.expertise-list,.contact-pending,.menu-panel{backdrop-filter:none;-webkit-backdrop-filter:none}
+  .menu-panel{background:#101616}
+  .contact-dialog::backdrop{backdrop-filter:none;-webkit-backdrop-filter:none;background:#000c}
+  .neural-graphic svg{filter:none}.neural-node{animation:none}
+  .reveal{transform:none;transition:opacity .25s ease}
+}}

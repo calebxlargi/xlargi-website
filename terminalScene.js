@@ -25,7 +25,7 @@ export function createTerminalScene(renderer, mobile, manager) {
   const texture = canvas => {
     const t = new THREE.CanvasTexture(canvas);
     t.colorSpace = THREE.SRGBColorSpace;
-    t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    t.anisotropy = Math.min(mobile ? 4 : 8, renderer.capabilities.getMaxAnisotropy());
     textures.add(t); return t;
   };
   function canvasTexture(width, height, draw) {
@@ -38,7 +38,7 @@ export function createTerminalScene(renderer, mobile, manager) {
   function loadTexture(path, color = true) {
     const map = assetLoader.load(path, loaded => { if (disposed) loaded.dispose(); });
     map.colorSpace = color ? THREE.SRGBColorSpace : THREE.NoColorSpace;
-    map.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    map.anisotropy = Math.min(mobile ? 4 : 8, renderer.capabilities.getMaxAnisotropy());
     textures.add(map); return map;
   }
   const paintWear = loadTexture('/textures/industrial-wear.webp');
@@ -658,7 +658,7 @@ export function createTerminalScene(renderer, mobile, manager) {
   decal(truck,idTexture,1.1,1.3,[-7.37,2.85,0.62],-Math.PI/2);
   // Original brand artwork is projected onto a skin that follows every corrugation.
   const brandMap = new THREE.TextureLoader(manager).load('/maersk-logo.svg', map => { if (disposed) map.dispose(); });
-  brandMap.colorSpace=THREE.SRGBColorSpace;brandMap.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());textures.add(brandMap);
+  brandMap.colorSpace=THREE.SRGBColorSpace;brandMap.anisotropy=Math.min(mobile ? 4 : 8,renderer.capabilities.getMaxAnisotropy());textures.add(brandMap);
   const brandMaterial=mat('#ffffff',0.9,0.05,{map:brandMap,transparent:true,alphaTest:0.04,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2,side:THREE.DoubleSide});
   const logoWidth=8.2, logoHeight=logoWidth/(1024/232), left=-1.2-logoWidth/2;
   for (const side of [-1,1]) {
