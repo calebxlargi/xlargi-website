@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { SMAAPass } from 'three/addons/postprocessing/SMAAPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { createTerminalScene } from './terminalScene';
 
@@ -20,7 +20,7 @@ export default function ContainerScanner({ progressRef }) {
     let renderer;
     try { renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' }); }
     catch { return; }
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, mobile ? 1.25 : 1.5));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, mobile ? 1.5 : 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.05;
@@ -29,12 +29,12 @@ export default function ContainerScanner({ progressRef }) {
     mount.appendChild(renderer.domElement);
     const terminal = createTerminalScene(renderer, mobile);
     const camera = new THREE.PerspectiveCamera(43, 1, 0.2, 450);
-    const composer = new EffectComposer(renderer);
+    // The composer renders offscreen: its target needs MSAA independently of the canvas.
+    const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: Math.min(mobile ? 2 : 4, renderer.capabilities.maxSamples) });
+    const composer = new EffectComposer(renderer, target);
     composer.addPass(new RenderPass(terminal.scene, camera));
-    const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.16, 0.35, 1.3);
-    // Keep lamp edges crisp; bloom creates a halo over reflective cab surfaces.
-    bloom.enabled = false;
-    composer.addPass(bloom);
+    const antialias = new SMAAPass();
+    composer.addPass(antialias);
     const output = new OutputPass(); composer.addPass(output);
     function resize() {
       const { width, height } = mount.getBoundingClientRect();
@@ -62,7 +62,7 @@ export default function ContainerScanner({ progressRef }) {
     });
     return () => {
       renderer.setAnimationLoop(null); observer.disconnect(); intersection.disconnect();
-      bloom.dispose(); output.dispose(); composer.dispose(); terminal.dispose();
+      antialias.dispose(); output.dispose(); composer.dispose(); terminal.dispose();
       renderer.dispose(); renderer.domElement.remove();
     };
   }, [progressRef]);

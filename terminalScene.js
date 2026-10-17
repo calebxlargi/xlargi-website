@@ -32,7 +32,8 @@ export function createTerminalScene(renderer, mobile) {
     draw(canvas.getContext('2d'), width, height);
     return texture(canvas);
   }
-  const paintWear = canvasTexture(512, 512, (ctx, w, h) => {
+  const paintWear = canvasTexture(2048, 2048, (ctx, w, h) => {
+    ctx.scale(4,4);w=h=512;
     ctx.fillStyle = '#dddcd7'; ctx.fillRect(0, 0, w, h);
     for (let i = 0; i < 14000; i++) {
       const v = 100 + Math.floor(random() * 150);
@@ -83,27 +84,43 @@ export function createTerminalScene(renderer, mobile) {
       ctx.fillRect(random()*w,random()*h,0.5+random()*1.5,0.5+random()*2);
     }
     const roadDust=ctx.createLinearGradient(0,h*0.65,0,h);
-    roadDust.addColorStop(0,'#675d4900');roadDust.addColorStop(1,'#675d4925');
+    roadDust.addColorStop(0,'#675d4900');roadDust.addColorStop(1,'#675d4955');
     ctx.fillStyle=roadDust;ctx.fillRect(0,0,w,h);
+    for(let i=0;i<1100;i++){
+      const x=random()*w,y=h*(0.7+random()*0.3);
+      ctx.fillStyle=i%4?'#6f655245':'#b6aaa06b';ctx.fillRect(x,y,1+random()*7,1+random()*3);
+    }
+    for(let i=0;i<90;i++){
+      ctx.fillStyle='#66544720';ctx.fillRect(random()*w,random()*h,1+random()*3,25+random()*140);
+    }
     for(let i=0;i<450;i++){
-      ctx.strokeStyle='#5f594510';ctx.lineWidth=0.5+random();
+      ctx.strokeStyle='#5f594532';ctx.lineWidth=0.5+random();
       const x=random()*w,y=random()*h;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+random()*18,y+random()*85);ctx.stroke();
     }
   });
+  // Localised chips and rain tracks remain visible under the softened key light.
   const cabMicro = canvasTexture(2048,2048,(ctx,w,h)=>{
     const pixels=ctx.createImageData(w,h);
     for(let i=0;i<pixels.data.length;i+=4){const v=170+Math.floor(random()*40);pixels.data[i]=pixels.data[i+1]=pixels.data[i+2]=v;pixels.data[i+3]=255;}
     ctx.putImageData(pixels,0,0);
+    for(let i=0;i<7000;i++){
+      ctx.strokeStyle=i%3?'#38383835':'#f0f0f040';ctx.lineWidth=0.5+random();
+      const x=random()*w,y=random()*h;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+2+random()*26,y+random()*2);ctx.stroke();
+    }
+    for(let i=0;i<160;i++){
+      const x=random()*w,y=random()*h,r=20+random()*100,g=ctx.createRadialGradient(x,y,0,x,y,r);
+      g.addColorStop(0,'#25252525');g.addColorStop(1,'#25252500');ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2);
+    }
   });
   cabMicro.colorSpace=THREE.NoColorSpace;
-  const cabFinish={map:cabEnamel,roughnessMap:cabMicro,bumpMap:cabMicro,bumpScale:0.0015,envMapIntensity:0.32};
-  const cabPaint = mat('#d4d6d2', 0.78, 0.06, cabFinish);
+  const cabFinish={map:cabEnamel,roughnessMap:cabMicro,bumpMap:cabMicro,bumpScale:0.004,envMapIntensity:0.45};
+  const cabPaint = mat('#821b24', 0.64, 0.5, cabFinish);
   const glass = mat('#0e202d', 0.09, 0.75, { envMapIntensity: 1.8 });
   const lens = mat('#bac7d7', 0.1, 0.7);
   const glow = mat('#fff1d5', 0.2, 0.1, { emissive: '#fff0cf', emissiveIntensity: 5 });
   const redGlow = mat('#ff213c', 0.3, 0.1, { emissive: '#ff0929', emissiveIntensity: 4 });
   const amber = mat('#ffb543', 0.2, 0.2, { emissive: '#ff910c', emissiveIntensity: 2 });
-  const paints = ['#244d78','#b74b35','#b6bbb8','#d0ad35','#739598','#893d32','#cf722b','#c8c4b5','#277b65','#242f59','#b33673','#bc3537','#2085a8'].map(color => mat(color, 0.65, 0.35, { map: paintWear }));
+  const paints = ['#244d78','#b74b35','#b6bbb8','#d0ad35','#739598','#893d32','#cf722b','#c8c4b5','#277b65','#242f59','#b33673','#bc3537','#2085a8'].map(color => mat(color, 0.65, 0.35, { map: paintWear, bumpMap: paintWear, bumpScale:0.009, envMapIntensity:0.45 }));
   // Aged off-white paint: rain streaks follow the corrugations; roof seams and lower rails collect grime.
   const containerWeather=canvasTexture(2048,512,(ctx,w,h)=>{
     ctx.fillStyle='#d3d2cd';ctx.fillRect(0,0,w,h);
@@ -129,7 +146,7 @@ export function createTerminalScene(renderer, mobile) {
   });
   const mainPaint = mat('#e0e2e0',0.86,0.12,{map:containerWeather,bumpMap:containerWeather,bumpScale:0.018});
   const fittingBlue = mat('#178bb5',0.55,0.45);
-  const cabAccent = mat('#b51a23', 0.76, 0.06, cabFinish);
+  const cabAccent = mat('#8f1d25', 0.64, 0.5, cabFinish);
   const chassisPaint = mat('#34383c', 0.82, 0.35, { map: paintWear });
   const rust = mat('#77533f', 0.96, 0.08);
   let disposed = false;
@@ -183,18 +200,47 @@ export function createTerminalScene(renderer, mobile) {
   moon.shadow.normalBias = 0.045; moon.shadow.bias = -0.0001;
   moon.shadow.blurSamples = 8; scene.add(moon);
   const groundMat = mat('#81858b', 0.72, 0.15, { map: asphalt, bumpMap: asphalt, bumpScale: 0.035 });
-  const ground = mesh(scene, new THREE.PlaneGeometry(300, 300), groundMat);
+  const ground = mesh(scene, new THREE.PlaneGeometry(300, 214), groundMat, [0, 0, 43]);
   ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; ground.castShadow = false;
   const apronGrid = new THREE.GridHelper(180, 120, '#8a9aa5', '#7d8d99');
-  apronGrid.position.y = 0.025;
+  apronGrid.position.set(0, 0.025, 26);
   apronGrid.material.transparent = true;
   apronGrid.material.opacity = 0.15;
   apronGrid.material.depthWrite = false;
   scene.add(apronGrid);
   // Quay edge, dark water and the lit container terminal beyond the inspection apron.
   // One continuous asphalt apron replaces the raised concrete platform.
-  const sea = mesh(scene, new THREE.PlaneGeometry(350, 160), mat('#081828', 0.24, 0.7), [0, -0.25, -140]);
+  const waveBump=canvasTexture(1024,1024,(ctx,w,h)=>{
+    const data=ctx.createImageData(w,h);
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      const v=128+28*Math.sin(x*0.065+Math.sin(y*0.031)*2)+18*Math.sin(y*0.16+x*0.022);
+      const i=(y*w+x)*4;data.data[i]=data.data[i+1]=data.data[i+2]=v;data.data[i+3]=255;
+    }ctx.putImageData(data,0,0);
+  });
+  waveBump.colorSpace=THREE.NoColorSpace;waveBump.wrapS=waveBump.wrapT=THREE.RepeatWrapping;waveBump.repeat.set(12,7);
+  const waterColor=canvasTexture(2048,1024,(ctx,w,h)=>{
+    ctx.fillStyle='#235567';ctx.fillRect(0,0,w,h);
+    for(let i=0;i<6500;i++){
+      ctx.strokeStyle=i%3?'#84a8b31c':'#071e3033';ctx.lineWidth=0.4+random()*1.3;
+      const x=random()*w,y=random()*h;ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+8,y-1,x+4+random()*42,y);ctx.stroke();
+    }
+  });waterColor.wrapS=waterColor.wrapT=THREE.RepeatWrapping;waterColor.repeat.set(5,4);
+  const sea = mesh(scene, new THREE.PlaneGeometry(350, 160), mat('#155368', 0.32, 0.35,{map:waterColor,bumpMap:waveBump,bumpScale:0.3,envMapIntensity:0.65,emissive:'#0a3040',emissiveIntensity:0.35}), [0, -0.8, -144]);
   sea.rotation.x = -Math.PI / 2; sea.castShadow = false;
+  // The asphalt terminates at a concrete quay wall, with fenders and mooring hardware.
+  const quayConcrete=mat('#6c7271',0.96,0,{map:paintWear});
+  box(scene,[300,4,1.2],[0,-2,-64],quayConcrete);
+  box(scene,[300,0.14,0.9],[0,-0.02,-63.8],quayConcrete);
+  const quayYellow=mat('#b2a05c',0.88,0.05);
+  for(let x=-145;x<150;x+=5){
+    box(scene,[2.5,0.025,0.25],[x,0.065,-63.3],quayYellow);
+    box(scene,[0.8,2.2,0.65],[x,-1.3,-64.8],rubber);
+    box(scene,[0.95,0.13,0.8],[x,0.1,-62.6],steel);
+    beam(scene,[x-0.25,0.12,-62.6],[x-0.25,0.6,-62.6],0.12,black);
+    beam(scene,[x+0.25,0.12,-62.6],[x+0.25,0.6,-62.6],0.12,black);
+    beam(scene,[x-0.45,0.52,-62.6],[x+0.45,0.52,-62.6],0.1,black);
+  }
+  for(const x of [-78,-30,22,72])beam(scene,[x,0.45,-62.6],[x+5,3.8,-73.1],0.045,mat('#766c50',0.95,0));
   const stripe = mat('#d2c49a', 0.85, 0);
   for (const z of [-5, 5]) box(scene, [95, 0.012, 0.09], [0, 0.02, z], stripe);
   for (let x = -45; x < 50; x += 5) box(scene, [2, 0.012, 0.08], [x, 0.022, 0], stripe);
@@ -229,7 +275,8 @@ export function createTerminalScene(renderer, mobile) {
   // Shipping-line markings based on the supplied container-stack reference.
   const shippingNames=['MAERSK','COSCO','EVERGREEN','“K” LINE','Hapag-Lloyd','HYUNDAI','CHINA SHIPPING','P&O','CMA CGM','OOCL','ONE','MSC','YANG MING','WAN HAI'];
   const shippingMaterials=shippingNames.map((name,index)=>{
-    const label=canvasTexture(1536,320,(ctx,w,h)=>{
+    const label=canvasTexture(3072,640,(ctx,w,h)=>{
+      ctx.scale(2,2);w=1536;h=320;
       const darkInk=index===1||index===4||index===11||index===12;
       const ink=darkInk?'#12324f':'#edf1ec';ctx.fillStyle=ink;
       ctx.textAlign='center';ctx.textBaseline='middle';
@@ -276,6 +323,17 @@ export function createTerminalScene(renderer, mobile) {
     const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.computeVertexNormals();return g;
   }
   const shippingGeometry=shippingSkin();
+  const cargoStencilMaterials=['#edf0df','#20323d'].map(ink=>{
+    const map=canvasTexture(2048,2048,(ctx,w,h)=>{
+      ctx.scale(2,2);ctx.fillStyle=ink;ctx.font='bold 54px monospace';
+      ctx.fillText('TCLU 481029 3',490,110);ctx.font='37px monospace';ctx.fillText('45G1',490,170);
+      for(const [i,line] of ['MAX GROSS','30 480 KG','TARE 3 800 KG','NET 26 680 KG','CU.CAP 76.4'].entries())ctx.fillText(line,485,420+i*67);
+      ctx.fillStyle='#d3b43a';ctx.fillRect(135,400,180,180);ctx.fillStyle='#252b2b';ctx.font='bold 30px sans-serif';ctx.fillText('CAUTION',153,445);ctx.fillText('9′6″ HIGH',140,500);ctx.fillText('CONTAINER',140,548);
+      ctx.fillStyle=ink;ctx.font='24px monospace';ctx.fillText('CSC SAFETY APPROVAL',90,875);ctx.fillText('ISO 6346',90,910);
+    });
+    return mat('#ffffff',0.9,0,{map,transparent:true,alphaTest:0.1,depthWrite:false,side:THREE.DoubleSide});
+  });
+  const cargoStencilGeometry=new THREE.PlaneGeometry(2.16,2.57);cargoStencilGeometry.rotateY(-Math.PI/2);
   let shippingIndex=0;
   function container(parent, at, material, detailed = false, ratio = 1) {
     const [x, y, z] = at;
@@ -287,6 +345,15 @@ export function createTerminalScene(renderer, mobile) {
       const choices=paintIndex===2||paintIndex===7?[0,1,9,12]:paintIndex===3||paintIndex===6?[4,11]:paintIndex===10?[10]:paintIndex===8?[2,6]:paintIndex===9?[8,13]:[3,5,7,8,9,13];
       const brand=choices[shippingIndex++%choices.length];
       instance(shippingGeometry,parent,shippingMaterials[brand],matrix);
+      const endX=x-6.15*ratio;
+      const ink=material.color.getHexString()==='b6bbb8'||material===paints[7]||material===paints[3]?1:0;
+      const markMatrix=new THREE.Matrix4().makeTranslation(endX-0.025,y+1.45,z);
+      instance(cargoStencilGeometry,parent,cargoStencilMaterials[ink],markMatrix);
+      box(parent,[0.035,2.61,0.035],[endX,y+1.45,z],black);
+      for(const offset of [-0.84,-0.3,0.3,0.84]){
+        beam(parent,[endX-0.035,y+0.18,z+offset],[endX-0.035,y+2.73,z+offset],0.018,galvanized);
+        box(parent,[0.07,0.045,0.22],[endX-0.06,y+1.15,z+offset+0.07],steel);
+      }
     }
     for (const side of [-1, 1]) {
       box(parent, [12.2 * ratio, 0.12, 0.1], [x, y + 0.06, z + side * 1.22], material);
@@ -320,7 +387,8 @@ export function createTerminalScene(renderer, mobile) {
     }
   }
   // End-on boxes add visible doors, seals, locking rods and small stencils to the foreground stacks.
-  const stackDoorMap=canvasTexture(512,768,ctx=>{
+  const stackDoorMap=canvasTexture(2048,3072,ctx=>{
+    ctx.scale(4,4);
     ctx.fillStyle='#e6e6d7';ctx.font='bold 33px monospace';ctx.fillText('TCLU 481029 3',215,65);ctx.font='25px monospace';ctx.fillText('22G1',215,105);
     ctx.fillText('MAX GROSS',210,300);ctx.fillText('30 480 KG',210,337);ctx.fillText('TARE 2 250 KG',210,390);ctx.fillText('CU.CAP 33.2',210,430);
     ctx.fillStyle='#dbc141';ctx.fillRect(45,310,120,100);ctx.fillStyle='#28313a';ctx.font='bold 18px monospace';ctx.fillText('CAUTION',60,345);ctx.fillText('HIGH CUBE',53,375);
@@ -349,54 +417,92 @@ export function createTerminalScene(renderer, mobile) {
     box(assembly,[0.13,0.035,0.13],[-0.09,-0.25,0],steel);
     return assembly;
   }
+  const scannerBrush=canvasTexture(2048,1024,(ctx,w,h)=>{
+    ctx.fillStyle='#a9adb0';ctx.fillRect(0,0,w,h);
+    for(let i=0;i<16000;i++){
+      const v=120+Math.floor(random()*95);ctx.strokeStyle=`rgba(${v},${v},${v},0.14)`;ctx.lineWidth=0.5+random();
+      const y=random()*h;ctx.beginPath();ctx.moveTo(random()*w,y);ctx.lineTo(w,y+random()*0.6);ctx.stroke();
+    }
+    const edge=ctx.createLinearGradient(0,0,w,0);edge.addColorStop(0,'#ffffff35');edge.addColorStop(0.2,'#ffffff00');edge.addColorStop(0.85,'#222b3000');edge.addColorStop(1,'#222b3040');ctx.fillStyle=edge;ctx.fillRect(0,0,w,h);
+  });
+  const scannerMetal=mat('#c4c8cb',0.48,0.72,{map:scannerBrush,bumpMap:scannerBrush,bumpScale:0.001,envMapIntensity:0.5});
+  const scannerHousing=mat('#1a2026',0.72,0.25,{roughnessMap:cabMicro,bumpMap:cabMicro,bumpScale:0.001});
+  const scannerFace=mat('#101820',0.22,0.08,{envMapIntensity:0.3});
+  const scannerStatus=mat('#7d1523',0.48,0.05,{emissive:'#a51b2f',emissiveIntensity:0.45});
+  const scannerLabel=canvasTexture(1024,512,(ctx,w,h)=>{
+    ctx.fillStyle='#b9bdbe';ctx.fillRect(0,0,w,h);ctx.fillStyle='#263039';ctx.font='bold 85px monospace';ctx.fillText('LINE SCAN',60,110);ctx.font='48px monospace';ctx.fillText('OPTICAL ARRAY',60,200);ctx.fillText('IP67 / 24V DC',60,280);
+    for(let i=0;i<80;i++)ctx.fillRect(60+i*10,340,2+(i%3),85);
+  });
   function latticeTower(z) {
     const x=-0.55;
-    box(scene,[3.15,0.28,1.38],[0.48,0.14,z],concrete);
-    box(scene,[2.95,0.05,1.28],[0.48,0.3,z],galvanized);
-    for(const dx of [-0.36,0.36])for(const dz of [-0.36,0.36]){
-      beam(scene,[x+dx,0.32,z+dz],[x+dx,6.76,z+dz],0.041,steel);
+    box(scene,[1.18,0.24,1.12],[-0.55,0.12,z],concrete);
+    box(scene,[1.95,0.24,0.68],[0.54,0.12,z],concrete);
+    box(scene,[1.07,0.055,1.01],[-0.55,0.27,z],galvanized);
+    box(scene,[1.88,0.055,0.6],[0.54,0.27,z],galvanized);
+    for(const dx of [-0.28,0.28])for(const dz of [-0.28,0.28]){
+      beam(scene,[x+dx,0.32,z+dz],[x+dx,6.76,z+dz],0.028,steel);
       box(scene,[0.16,0.035,0.16],[x+dx,0.34,z+dz],steel);
       for(const bx of [-0.045,0.045])for(const bz of [-0.045,0.045])beam(scene,[x+dx+bx,0.34,z+dz+bz],[x+dx+bx,0.39,z+dz+bz],0.009,black);
     }
-    for(let y=0.42;y<6.6;y+=0.78){
-      for(const dz of [-0.36,0.36]){
-        beam(scene,[x-0.36,y,z+dz],[x+0.36,y+0.78,z+dz],0.022,steel);
-        beam(scene,[x+0.36,y,z+dz],[x-0.36,y+0.78,z+dz],0.022,steel);
+    for(let level=0;level<8;level++){
+      const y=0.42+level*0.79,flip=level%2?1:-1;
+      for(const dz of [-0.28,0.28]){
+        beam(scene,[x+flip*0.28,y,z+dz],[x-flip*0.28,y+0.79,z+dz],0.016,steel);
+        beam(scene,[x-0.28,y,z+dz],[x+0.28,y,z+dz],0.014,steel);
       }
-      for(const dx of [-0.36,0.36]){
-        beam(scene,[x+dx,y,z-0.36],[x+dx,y+0.78,z+0.36],0.022,steel);
-        beam(scene,[x+dx,y,z+0.36],[x+dx,y+0.78,z-0.36],0.022,steel);
-      }
+      for(const dx of [-0.28,0.28])beam(scene,[x+dx,y,z+flip*0.28],[x+dx,y+0.79,z-flip*0.28],0.016,steel);
     }
     // Off-white cabinet attached to the outer side of the near truss.
     if(z>0){
-      rounded(scene,[0.7,1.3,0.43],0.03,[-0.38,1.65,z+0.58],white);
-      box(scene,[0.65,1.23,0.025],[-0.38,1.65,z+0.81],steel);
-      box(scene,[0.61,1.19,0.028],[-0.38,1.65,z+0.83],white);
+      rounded(scene,[0.61,1.12,0.37],0.03,[-0.38,1.65,z+0.58],white);
+      box(scene,[0.57,1.06,0.025],[-0.38,1.65,z+0.81],steel);
+      box(scene,[0.53,1.02,0.028],[-0.38,1.65,z+0.83],white);
       box(scene,[0.035,0.17,0.04],[-0.17,1.65,z+0.86],black);
       for(let i=0;i<6;i++)box(scene,[0.2,0.012,0.025],[-0.48,1.2+i*0.045,z+0.86],galvanized);
       beam(scene,[-0.37,1,z+0.55],[-0.37,0.35,z+0.55],0.018,black);
     }
-    // Full height black scanner rail with the tall, wider silver head from the reference.
+    // Profiled scanner extrusion: a dark recessed lower array and tall brushed-metal head.
     const inside=z+(z>0?-0.1:0.1);
-    beam(scene,[1.25,0.35,inside],[1.25,4.97,inside],0.065,black);
-    beam(scene,[1.42,0.35,inside],[1.42,4.97,inside],0.045,galvanized);
-    rounded(scene,[0.12,2.6,0.4],0.02,[1.29,6.1,inside],steel);
-    box(scene,[0.035,2.36,0.027],[1.215,6.1,inside],galvanized);
-    box(scene,[0.035,4.5,0.038],[1.18,2.67,inside+(z>0?-0.08:0.08)],black);
-    box(scene,[0.02,4.42,0.018],[1.165,2.67,inside+(z>0?-0.09:0.09)],redGlow);
+    const column=new THREE.Group();column.position.set(1.3,0,inside);column.scale.set(0.68,0.92,0.72);scene.add(column);
+    rounded(column,[0.3,0.14,0.68],0.025,[0,0.42,0],scannerMetal);
+    rounded(column,[0.24,4.42,0.4],0.025,[0,2.7,0],scannerHousing);
+    rounded(column,[0.24,2.58,0.44],0.025,[0,6.17,0],scannerMetal);
+    // Rear support and narrow raised side flanges define the actual extrusion depth.
+    box(column,[0.075,6.85,0.11],[0.17,3.9,0],scannerMetal);
+    for(const side of [-1,1]){
+      rounded(column,[0.08,4.46,0.055],0.012,[-0.135,2.7,side*0.205],scannerHousing);
+      box(column,[0.035,2.38,0.026],[-0.143,6.17,side*0.19],scannerMetal);
+      box(column,[0.025,2.36,0.018],[-0.16,6.17,side*0.145],galvanized);
+    }
+    rounded(column,[0.018,4.25,0.265],0.009,[-0.136,2.7,0],scannerFace);
+    box(column,[0.012,4.15,0.012],[-0.151,2.7,0.09],scannerStatus);
+    for(const y of [0.65,2.4,4.7,5.1,7.27])for(const dz of [-0.17,0.17]){
+      const screw=mesh(column,new THREE.CylinderGeometry(0.018,0.018,0.012,6),chrome,[-0.155,y,dz]);screw.rotation.z=Math.PI/2;
+      beam(column,[-0.164,y-0.007,dz],[-0.164,y+0.007,dz],0.003,black);
+    }
+    for(const y of [0.95,3.15,5.2]){
+      box(column,[0.19,0.12,0.52],[0.2,y,0],scannerMetal);
+      for(const dz of [-0.22,0.22])beam(column,[0.22,y-0.07,dz],[0.22,y+0.07,dz],0.021,chrome);
+    }
+    rounded(column,[0.29,0.06,0.48],0.018,[0,7.49,0],scannerMetal);
+    box(column,[0.25,0.055,0.44],[0,4.88,0],black);
+    decal(column,scannerLabel,0.24,0.12,[-0.126,6.92,0],-Math.PI/2);
+    for(const dx of [-0.09,0.09])for(const dz of [-0.25,0.25])beam(column,[dx,0.48,dz],[dx,0.54,dz],0.02,chrome);
+    // Cable gland, flexible lead and protective rear conduit terminate at the plinth.
+    beam(column,[0.1,0.65,0.16],[0.25,0.65,0.16],0.035,black);
+    beam(column,[0.25,0.65,0.16],[0.25,0.35,0.16],0.025,scannerHousing);
     // Mid-height auxiliary sensor and cabling on the frame.
     beam(scene,[-0.75,2.9,z],[-0.75,2.9,z+(z>0?-0.57:0.57)],0.026,steel);
     bulletCamera(scene,[-0.75,3.05,z+(z>0?-0.5:0.5)],[0.3,-0.04,z>0?-1:1],0.8);
   }
   latticeTower(-2.7); latticeTower(2.7);
   // Four chords and alternating triangular bracing around the square crossbeam.
-  for(const x of [-0.91,-0.19])for(const y of [6.76,7.34])beam(scene,[x,y,-3.06],[x,y,3.06],0.045,steel);
+  for(const x of [-0.83,-0.27])for(const y of [6.76,7.34])beam(scene,[x,y,-3.06],[x,y,3.06],0.03,steel);
   for(let index=0;index<10;index++){
     const z=-3.06+index*0.612;
     const from=index%2?7.34:6.76,to=index%2?6.76:7.34;
-    for(const x of [-0.91,-0.19])beam(scene,[x,from,z],[x,to,z+0.612],0.022,steel);
-    beam(scene,[-0.91,7.34,z],[-0.19,7.34,z+0.612],0.02,steel);
+    for(const x of [-0.83,-0.27])beam(scene,[x,from,z],[x,to,z+0.612],0.016,steel);
+    beam(scene,[-0.83,7.34,z],[-0.27,7.34,z+0.612],0.014,steel);
   }
   // Reference top assembly: horizontal sensor spine, front-hung panel and rear tilted panel.
   const sensorFinish = mat('#b3b5ae',0.48,0.55);
@@ -458,7 +564,19 @@ export function createTerminalScene(renderer, mobile) {
   cabSide.lineTo(7.48, 0.65); cabSide.lineTo(7.48, 1.45); cabSide.lineTo(7.4, 2.56);
   cabSide.lineTo(7.15, 3.66); cabSide.lineTo(6.85, 3.94); cabSide.lineTo(5.08, 3.94);
   cabSide.lineTo(4.85, 3.6); cabSide.closePath();
+  const sideOpening=new THREE.Path();
+  sideOpening.moveTo(5.86,2.65);sideOpening.lineTo(5.86,3.57);sideOpening.lineTo(6.98,3.55);sideOpening.lineTo(7.15,2.69);sideOpening.closePath();
+  cabSide.holes.push(sideOpening);
   const cabGeometry = new THREE.ExtrudeGeometry(cabSide, { depth: 2.36, bevelEnabled: true, bevelSize: 0.055, bevelThickness: 0.055, bevelSegments: 4, curveSegments: 32, steps: 1 });
+  // Open the front above the dashboard so glazing looks into a real cabin.
+  const cabPositions=cabGeometry.getAttribute('position'),cabNormals=cabGeometry.getAttribute('normal'),cabUvs=cabGeometry.getAttribute('uv');
+  const keptPositions=[],keptNormals=[],keptUvs=[];
+  for(let i=0;i<cabPositions.count;i+=3){
+    let cx=0,cy=0;for(let j=0;j<3;j++){cx+=cabPositions.getX(i+j)/3;cy+=cabPositions.getY(i+j)/3;}
+    if(cx>6.95&&[0,1,2].some(j=>cabNormals.getX(i+j)>0.15))continue;
+    for(let j=0;j<3;j++){const k=i+j;keptPositions.push(cabPositions.getX(k),cabPositions.getY(k),cabPositions.getZ(k));keptNormals.push(cabNormals.getX(k),cabNormals.getY(k),cabNormals.getZ(k));keptUvs.push((cabPositions.getX(k)-4.8)/2.8,(cabPositions.getY(k)-0.6)/3.5);}
+  }
+  cabGeometry.setAttribute('position',new THREE.Float32BufferAttribute(keptPositions,3));cabGeometry.setAttribute('normal',new THREE.Float32BufferAttribute(keptNormals,3));cabGeometry.setAttribute('uv',new THREE.Float32BufferAttribute(keptUvs,2));cabGeometry.clearGroups();
   mesh(truck, cabGeometry, cabPaint, [0, 0, -1.18]);
   // Smooth quad surfaces give the cab a crowned front instead of a flat rectangular face.
   function patch(columns, rows, point) {
@@ -478,28 +596,34 @@ export function createTerminalScene(renderer, mobile) {
       return [x+0.105*(1-Math.pow(Math.abs(z)/1.24,4))+offset,y,z];
     });
   }
-  const frontMaterial=mat('#d4d6d2',0.78,0.06,{...cabFinish,side:THREE.DoubleSide});
+  const frontMaterial=mat('#821b24',0.64,0.5,{...cabFinish,side:THREE.DoubleSide});
   mesh(truck,frontSkin(1.42,2.65,1.21,0.012),frontMaterial);
   // Curved high-roof sleeper, with the crown and side fairings blended together.
   const roofCurve=new THREE.CatmullRomCurve3([
     new THREE.Vector3(4.98,4.17,0),new THREE.Vector3(5.23,4.43,0),new THREE.Vector3(5.72,4.46,0),new THREE.Vector3(6.2,4.33,0),new THREE.Vector3(6.65,4.13,0),new THREE.Vector3(7.05,3.89,0)
   ]);
   const roofTop=patch(32,24,(u,v)=>{const p=roofCurve.getPoint(u);const z=(v*2-1)*1.16;return[p.x,p.y-0.13*Math.pow(Math.abs(z)/1.16,3),z];});
-  const roofMat=mat('#b51a23',0.76,0.06,{...cabFinish,side:THREE.DoubleSide});mesh(truck,roofTop,roofMat);
+  const roofMat=mat('#8f1d25',0.64,0.5,{...cabFinish,side:THREE.DoubleSide});mesh(truck,roofTop,roofMat);
   for(const side of [-1,1])mesh(truck,patch(32,6,(u,v)=>{const p=roofCurve.getPoint(u);return[p.x,THREE.MathUtils.lerp(3.87,p.y-0.13,v),side*1.16];}),roofMat);
   mesh(truck,patch(12,8,(u,v)=>[4.98,THREE.MathUtils.lerp(3.87,4.04,v),(u*2-1)*1.16]),roofMat);
   // The screen has a shallow wrap, a continuous rubber surround, and readable interior shadows.
-  const seal=mat('#202b35',0.72,0.1,{side:THREE.DoubleSide});mesh(truck,frontSkin(2.53,3.69,1.17,0.032),seal);
-  const windscreenMap=canvasTexture(2048,1024,(ctx,w,h)=>{
-    ctx.scale(2,2);w=1024;h=512;
-    const sky=ctx.createLinearGradient(0,0,w,h);sky.addColorStop(0,'#77858f');sky.addColorStop(0.45,'#4c5d6b');sky.addColorStop(1,'#202f3c');ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
-    // Soft seat silhouettes and dashboard avoid the opaque black-board appearance.
-    ctx.fillStyle='#18253170';for(const x of [190,700]){ctx.beginPath();ctx.roundRect(x,150,140,235,24);ctx.fill();ctx.beginPath();ctx.roundRect(x+20,98,100,65,17);ctx.fill();}
-    ctx.fillStyle='#18232b';ctx.beginPath();ctx.moveTo(0,458);ctx.quadraticCurveTo(512,380,1024,458);ctx.lineTo(1024,512);ctx.lineTo(0,512);ctx.fill();
-    ctx.strokeStyle='#9fb3c544';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(0,70);ctx.lineTo(1024,155);ctx.stroke();
-    ctx.strokeStyle='#16232d';ctx.lineWidth=13;ctx.beginPath();ctx.ellipse(745,396,74,27,-0.12,0,Math.PI*2);ctx.stroke();
-  });
-  const screenMaterial=mat('#c3d1da',0.18,0.3,{map:windscreenMap,envMapIntensity:0.65,side:THREE.DoubleSide});
+  const seal=mat('#202b35',0.72,0.1,{side:THREE.DoubleSide});
+  mesh(truck,frontSkin(2.53,2.64,1.17,0.032),seal);
+  mesh(truck,frontSkin(3.59,3.69,1.17,0.032),seal);
+  for(const side of [-1,1])beam(truck,[7.45,2.6,side*1.1],[7.18,3.65,side*1.1],0.05,seal);
+  const screenMaterial=new THREE.MeshPhysicalMaterial({color:'#17313b',roughness:0.2,metalness:0,transmission:0,thickness:0.025,ior:1.45,transparent:true,opacity:0.58,envMapIntensity:0.12,side:THREE.DoubleSide,depthWrite:false});
+  materials.add(screenMaterial);
+  const interior=mat('#303a3c',0.95,0);
+  box(truck,[0.09,1.5,2.1],[5.62,2.93,0],interior);
+  box(truck,[1.52,0.08,2.1],[6.4,3.68,0],interior);
+  box(truck,[1.6,0.08,2.1],[6.4,2.05,0],interior);
+  box(truck,[1.55,0.23,2.1],[6.55,2.57,0],interior);
+  for(const z of [-0.62,0.62]){
+    rounded(truck,[0.65,0.19,0.57],0.08,[6.05,2.16,z],interior);
+    rounded(truck,[0.19,0.8,0.57],0.08,[5.8,2.63,z],interior);
+    rounded(truck,[0.15,0.22,0.37],0.05,[5.8,3.14,z],interior);
+  }
+  const steering=mesh(truck,new THREE.TorusGeometry(0.24,0.025,8,32),black,[6.72,2.88,0.62]);steering.rotation.y=Math.PI/2;
   mesh(truck,frontSkin(2.63,3.6,1.075,0.052),screenMaterial);
   // Deep aerodynamic visor and a two-piece cowl beneath the glass.
   rounded(truck,[0.37,0.2,2.4],0.055,[7.2,3.76,0],black).rotation.z=0.12;
@@ -511,8 +635,10 @@ export function createTerminalScene(renderer, mobile) {
   }
   for (const side of [-1, 1]) {
     const z = side * 1.244;
-    profile(truck, [[5.78,2.58],[7.24,2.63],[7.02,3.62],[5.78,3.65]], 0.015, black, z, 0.015);
-    profile(truck, [[5.87,2.66],[7.13,2.7],[6.96,3.54],[5.87,3.56]], 0.02, glass, z + side * 0.02, 0.015);
+    const windowCorners=[[5.83,2.62,z],[7.18,2.66,z],[7,3.6,z],[5.83,3.61,z]];
+    windowCorners.forEach((point,i)=>beam(truck,point,windowCorners[(i+1)%4],0.035,seal));
+    const sideGlassShape=new THREE.Shape();[[5.87,2.66],[7.13,2.7],[6.96,3.54],[5.87,3.56]].forEach(([x,y],i)=>i?sideGlassShape.lineTo(x,y):sideGlassShape.moveTo(x,y));sideGlassShape.closePath();
+    mesh(truck,new THREE.ShapeGeometry(sideGlassShape),screenMaterial,[0,0,z+side*0.02]);
     profile(truck,[[5.04,3.93],[5.12,4.16],[5.62,4.12],[5.8,3.94]],0.06,black,z+side*0.025,0.025);
     for(let i=0;i<10;i++)beam(truck,[5.12+i*0.055,3.98,z+side*0.07],[5.2+i*0.055,4.1,z+side*0.07],0.009,galvanized);
     // Door and sleeper seams, recessed service panel, and handle.
@@ -526,8 +652,8 @@ export function createTerminalScene(renderer, mobile) {
     // Mirror support and stacked main / wide-angle mirrors.
     beam(truck, [6.94, 3.62, z], [7.03, 3.61, z + side * 0.33], 0.021, black);
     beam(truck, [7.03, 3.61, z + side * 0.33], [7.1, 2.73, z + side * 0.33], 0.021, black);
-    rounded(truck, [0.25, 0.62, 0.21], 0.045, [7.08, 3.2, z + side * 0.33], white);
-    rounded(truck, [0.24, 0.22, 0.21], 0.035, [7.08, 2.76, z + side * 0.33], white);
+    rounded(truck, [0.25, 0.62, 0.21], 0.045, [7.08, 3.2, z + side * 0.33], cabPaint);
+    rounded(truck, [0.24, 0.22, 0.21], 0.035, [7.08, 2.76, z + side * 0.33], cabPaint);
     box(truck, [0.025, 0.51, 0.15], [7.225, 3.2, z + side * 0.33], chrome);
     // Wheel arch is a curved shell rather than a solid block above a floating tyre.
     const arch = new THREE.Shape();
@@ -551,7 +677,7 @@ export function createTerminalScene(renderer, mobile) {
     for (const x of [-6.2,-4.5,-2.8,-0.9,1,3.2]) box(truck,[0.11,0.065,0.045],[x,1.35,side*1.27],amber);
   }
   // Broad lower bumper, recessed upper grille and paired lower air intakes match the reference proportions.
-  const bumper=mat('#b51a23',0.76,0.06,cabFinish);
+  const bumper=mat('#8f1d25',0.64,0.5,cabFinish);
   rounded(truck,[0.29,0.9,2.47],0.105,[7.49,0.96,0],bumper);
   rounded(truck,[0.07,0.07,2.3],0.025,[7.66,0.52,0],black);
   rounded(truck,[0.13,0.58,1.91],0.045,[7.57,1.86,0],galvanized);
@@ -881,26 +1007,84 @@ export function createTerminalScene(renderer, mobile) {
     for(const dz of [-42,-25,-10,7,20])box(scene,[0.35,0.1,0.5],[x+3.7,32.9,z+dz],glow);
   }
   [-58,-25,20,56].forEach((x,index)=>crane(x,-52,index));
-  // Moored cargo vessels with shaped bows and illuminated bridge decks.
-  function ship(x, z) {
-    const hullShape = new THREE.Shape();
-    hullShape.moveTo(-34, -5.8); hullShape.lineTo(29, -5.8); hullShape.quadraticCurveTo(40, -4.8, 44, 0); hullShape.quadraticCurveTo(40, 4.8, 29, 5.8); hullShape.lineTo(-34, 5.8); hullShape.quadraticCurveTo(-37, 0, -34, -5.8);
-    const geo = new THREE.ExtrudeGeometry(hullShape, { depth: 4.6, bevelEnabled: true, bevelSegments: 2, steps: 1, bevelSize: 0.6, bevelThickness: 0.5 });
-    geo.rotateX(-Math.PI / 2);
-    mesh(scene, geo, mat('#202c38', 0.5, 0.65), [x, -1, z]);
-    box(scene, [65, 0.3, 10], [x - 1, 4, z], mat('#777f82'));
-    for (let col = 0; col < 5; col++) for (let row = 0; row < 3; row++) for (let level = 0; level < 3 + (col % 2); level++) container(scene, [x - 20 + col * 12.4, 4.2 + level * 2.95, z - 3 + row * 2.5], paints[(col + row + level) % paints.length]);
-    for (let deck = 0; deck < 5; deck++) {
-      box(scene, [7.8 - deck * 0.3, 1.9, 9 - deck * 0.4], [x - 30, 5.5 + deck * 1.95, z], white);
-      for (let window = -3; window <= 3; window++) {
-        box(scene, [0.45, 0.5, 0.035], [x - 30 + window * 0.85, 5.8 + deck * 1.95, z + 4.55 - deck * 0.2], glow);
+  // Ocean-going container ships: curved hull sections, full-width bridge and lashing frames.
+  const hullRed=mat('#7f272d',0.74,0.28,{map:paintWear,bumpMap:paintWear,bumpScale:0.025});
+  const hullLower=mat('#303c42',0.9,0.1,{map:paintWear});
+  const deckRed=mat('#8a3236',0.88,0.1,{map:paintWear});
+  const shipIvory=mat('#bfc2b8',0.82,0.1,{map:paintWear});
+  const bridgeGlass=mat('#3f6572',0.17,0.35,{envMapIntensity:0.65});
+  const warmWindows=mat('#adbcad',0.45,0.1,{emissive:'#86968b',emissiveIntensity:0.18});
+  function ship(x,z,index){
+    const vessel=new THREE.Group();vessel.position.set(x,0,z);scene.add(vessel);
+    // Cross-sections narrow below the waterline and taper into a pointed bow.
+    const sections=[[-43,4.2],[-39,7],[-31,8],[-12,8],[10,8],[26,7.5],[34,5.7],[41,2.6],[45,0.1]];
+    function hullBand(bottom,top,bottomScale,topScale,material){
+      const vertices=[],indices=[];
+      for(const [sx,width] of sections)for(const side of [-1,1]){
+        vertices.push(sx,bottom,side*width*bottomScale,sx,top,side*width*topScale);
+      }
+      for(let i=0;i<sections.length-1;i++)for(let side=0;side<2;side++){
+        const k=i*4+side*2,n=k+4;indices.push(k,n,k+1,n,n+1,k+1);
+      }
+      const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setIndex(indices);geometry.computeVertexNormals();
+      material.side=THREE.DoubleSide;mesh(vessel,geometry,material);
+    }
+    hullBand(-2.8,-0.4,0.64,0.9,hullLower);hullBand(-0.4,4.6,0.9,1,hullRed);
+    const deckShape=new THREE.Shape();sections.forEach(([sx,w],i)=>i?deckShape.lineTo(sx,w):deckShape.moveTo(sx,w));[...sections].reverse().forEach(([sx,w])=>deckShape.lineTo(sx,-w));deckShape.closePath();
+    const deckGeo=new THREE.ShapeGeometry(deckShape,24);deckGeo.rotateX(-Math.PI/2);mesh(vessel,deckGeo,deckRed,[0,4.62,0]);
+    // Rails follow the complete tapered gunwale, leaving an open working forecastle.
+    for(const side of [-1,1])for(let i=0;i<sections.length-1;i++){
+      const [ax,aw]=sections[i],[bx,bw]=sections[i+1];
+      for(const h of [4.8,5.2,5.6])beam(vessel,[ax,h,side*aw],[bx,h,side*bw],0.025,shipIvory);
+      const count=Math.ceil((bx-ax)/2.4);for(let j=0;j<count;j++){const t=j/count;beam(vessel,[THREE.MathUtils.lerp(ax,bx,t),4.7,side*THREE.MathUtils.lerp(aw,bw,t)],[THREE.MathUtils.lerp(ax,bx,t),5.6,side*THREE.MathUtils.lerp(aw,bw,t)],0.025,shipIvory);}
+    }
+    // Five lanes of cargo with lower outer tiers and a stepped top silhouette.
+    for(let bay=0;bay<5;bay++)for(let row=0;row<5;row++){
+      const cx=-23+bay*12.35,cz=(row-2)*2.51;
+      const height=3+(row>0&&row<4?1:0)+((bay+row+index)%3===0?1:0);
+      for(let tier=0;tier<height;tier++)container(vessel,[cx,4.9+tier*2.95,cz],paints[(bay*7+row*3+tier*2+index*4)%paints.length]);
+    }
+    // Red lashing bridges, uprights and walkways between cargo bays.
+    for(const bx of [-29.3,-16.95,-4.6,7.75,20.1,32.45]){
+      for(const side of [-1,1]){
+        const pz=side*6.5;beam(vessel,[bx,4.8,pz],[bx,13.6,pz],0.075,deckRed);
+        beam(vessel,[bx-0.6,4.8,pz],[bx-0.6,13.6,pz],0.04,deckRed);
+        for(let y=5;y<13.5;y+=0.45)beam(vessel,[bx-0.6,y,pz],[bx,y,pz],0.025,shipIvory);
+        for(let tier=0;tier<3;tier++)beam(vessel,[bx,5+tier*2.95,pz],[bx,7.8+tier*2.95,pz-side*1],0.025,steel);
       }
     }
-    beam(scene, [x - 30, 14, z], [x - 30, 21, z], 0.08, steel);
-    box(scene, [5, 0.12, 0.18], [x - 30, 18, z], steel);
-    box(scene, [0.12, 0.15, 0.12], [x - 30, 21.1, z], glow);
+    // Aft accommodation tower with a panoramic bridge, wings and exterior stairs.
+    box(vessel,[7,11.2,11.5],[-35.2,10.4,0],shipIvory);
+    for(let floor=0;floor<5;floor++){
+      for(const side of [-1,1])for(let win=0;win<3;win++)box(vessel,[0.75,0.8,0.035],[-37+win*1.6,6.2+floor*1.9,side*5.77],(win+floor)%3?bridgeGlass:warmWindows);
+      for(const side of [-1,1])beam(vessel,[-39,5.4+floor*1.9,side*6],[-31.5,7.3+floor*1.9,side*6],0.035,shipIvory);
+    }
+    box(vessel,[10.8,1.6,17],[-35.2,16.7,0],shipIvory);
+    for(let win=0;win<16;win++)box(vessel,[0.035,1.02,0.8],[-29.78,16.85,-7.5+win],bridgeGlass);
+    for(const side of [-1,1])for(let win=0;win<9;win++)box(vessel,[0.85,1,0.035],[-39.6+win,16.85,side*8.52],bridgeGlass);
+    box(vessel,[11.5,0.25,17.7],[-35.2,17.65,0],shipIvory);
+    beam(vessel,[-35,17.8,0],[-35,23,0],0.07,shipIvory);
+    beam(vessel,[-38,20.4,0],[-32,20.4,0],0.05,shipIvory);
+    for(const side of [-1,1])beam(vessel,[-35,18,side*3],[-35,21.9,0],0.03,steel);
+    box(vessel,[3,4,3],[-40,17,-3],deckRed);box(vessel,[3.15,0.3,3.15],[-40,19.05,-3],black);
+    // Foredeck mast, winches, chain runs, hatches and anchors.
+    beam(vessel,[37,4.7,0],[37,12,0],0.09,shipIvory);
+    for(const side of [-1,1]){
+      beam(vessel,[34.8,4.7,side*2],[37,10,0],0.055,shipIvory);
+      box(vessel,[1.5,0.5,1.3],[36,4.9,side*2.7],deckRed);
+      beam(vessel,[36,5.4,side*2.1],[36,5.4,side*3.4],0.36,steel);
+      beam(vessel,[36,5.1,side*3.2],[41,4.9,side*2],0.065,black);
+      for(let link=0;link<12;link++){
+        const ring=mesh(vessel,new THREE.TorusGeometry(0.105,0.035,5,8),black,[36+link*0.38,5.03,side*(3.2-link*0.09)]);ring.rotation.x=link%2?Math.PI/2:0;
+      }
+      box(vessel,[1.4,0.16,1],[39,4.8,side*1.4],steel);
+      beam(vessel,[42,1.2,side*2],[42,2.8,side*2],0.07,black);
+      beam(vessel,[41.5,1.4,side*2],[42.5,1.4,side*2],0.08,black);
+    }
+    const nameMap=canvasTexture(2048,256,(ctx,w,h)=>{ctx.fillStyle='#d9d5c8';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='90px Arial';ctx.fillText(index?'PACIFIC CONTAINER LINE':'CPL SHIPPING LINE',w/2,h/2,1950);});
+    for(const side of [-1,1])decal(vessel,nameMap,27,2.1,[-2,2.7,side*8.03],side>0?0:Math.PI);
   }
-  ship(-54, -79); ship(48, -80);
+  ship(-52,-79,0);ship(49,-80,1);
   // Consolidate thousands of repeated parts into a small number of GPU draws.
   batches.forEach((byMaterial, parent) => byMaterial.forEach((byGeometry, material) => byGeometry.forEach((entries, geometry) => {
     const instanced = new THREE.InstancedMesh(geometry, material, entries.length);
@@ -924,7 +1108,7 @@ export function createTerminalScene(renderer, mobile) {
     light.position.set(...source); light.target.position.set(...target);
     truckLighting.add(light, light.target);
   }
-  truckSpot('#fff4e4', 750, [3, 11, 7], [-1, 2, 0], 0.7);
+  truckSpot('#fff4e4', 480, [3, 11, 7], [-1, 2, 0], 0.7);
   truckSpot('#b8eaff', 450, [-5, 9, -6], [-2, 2.5, 0], 0.7);
   truckSpot('#e5f4ff', 280, [9, 5, 4], [6, 2, 0], 0.55);
   scene.add(truckLighting);
@@ -940,6 +1124,8 @@ export function createTerminalScene(renderer, mobile) {
     update(elapsed, progress, camera) {
       // Loop outside the central view; start each visit with the truck under the portal.
       const phase = (elapsed * 0.85 + 20) % 44;
+      waveBump.offset.set(elapsed*0.007,elapsed*0.003);
+      waterColor.offset.set(elapsed*0.0015,elapsed*0.0008);
       truck.position.x = phase - 22;
       truckLighting.position.x = truck.position.x;
       contactShadow.position.x = truck.position.x - 0.6;
