@@ -20,12 +20,12 @@ class SceneBoundary extends Component {
   render() { return this.state.failed ? null : this.props.children; }
 }
 
-function LoadingScreen({ phase, error, onContinue }) {
+function LoadingScreen({ phase, error }) {
   return <div className="site-loader" role="status" aria-live="polite" aria-busy={!error}>
     <img src="/xlargi-logo.svg" alt="XLARGI" width="279" height="56" />
     <div className={`loader-track ${error ? 'is-stopped' : ''}`} aria-hidden="true"><span /></div>
-    <p>{error ? 'The 3D scene could not finish loading.' : phase}</p>
-    {error && <div className="loader-actions"><button className="pill" onClick={() => window.location.reload()}>Try again</button><button className="pill light" onClick={onContinue}>Continue to website</button></div>}
+    <p>{error ? 'The animation could not load. Please try loading it again.' : phase}</p>
+    {error && <div className="loader-actions"><button className="pill light" onClick={() => window.location.reload()}>Retry loading</button></div>}
   </div>;
 }
 
@@ -33,9 +33,8 @@ export default function App() {
   const [ready, setReady] = useState(false);
   const [phase, setPhase] = useState('Loading the experience');
   const [loadError, setLoadError] = useState(false);
-  const [skipScene, setSkipScene] = useState(false);
   const handleSceneReady = useCallback(() => { setLoadError(false); setReady(true); }, []);
-  const handleSceneError = useCallback(() => setLoadError(true), []);
+  const handleSceneError = useCallback(() => { setLoadError(true); setReady(false); }, []);
   const handlePhase = useCallback(value => setPhase(value), []);
   useEffect(() => {
     document.getElementById('boot-loader')?.remove();
@@ -95,7 +94,7 @@ export default function App() {
   }, [menu]);
 
   return <>
-    {!ready && <LoadingScreen phase={phase} error={loadError} onContinue={() => { setSkipScene(true); setReady(true); }} />}
+    {!ready && <LoadingScreen phase={phase} error={loadError} />}
     <div inert={!ready ? '' : undefined} aria-hidden={!ready ? true : undefined}>
     <a href="#main" className="skip-link">Skip to content</a>
     <header className="site-header">
@@ -104,7 +103,7 @@ export default function App() {
       <div className="header-actions"><button className="pill compact" onClick={() => setContact(true)}>Contact <Arrow /></button><button className={`menu-toggle ${menu ? 'open' : ''}`} aria-label={menu ? 'Close menu' : 'Open menu'} aria-expanded={menu} aria-controls="site-menu" onClick={() => setMenu(value => !value)}><span /><span /></button></div>
     </header>
     {menu && <nav id="site-menu" className="menu-panel" aria-label="Main navigation"><span className="eyebrow">EXPLORE XLARGI</span>{[...chapters, { id: 'solutions', label: 'Our solutions' }, { id: 'about', label: 'The company' }].map((item, i) => <a key={item.id} href={`#${item.id}`} onClick={() => setMenu(false)}><small>0{i + 1}</small>{item.label}<Arrow /></a>)}<button onClick={() => { setMenu(false); setContact(true); }}>Let’s talk <Arrow /></button></nav>}
-    <div className="story-scene">{!skipScene && <SceneBoundary onError={handleSceneError}><Suspense fallback={null}><ContainerScanner suspended={contact || menu} progressRef={progressRef} onReady={handleSceneReady} onError={handleSceneError} onPhase={handlePhase} /></Suspense></SceneBoundary>}</div>
+    <div className="story-scene">{<SceneBoundary onError={handleSceneError}><Suspense fallback={null}><ContainerScanner suspended={contact || menu || loadError} progressRef={progressRef} onReady={handleSceneReady} onError={handleSceneError} onPhase={handlePhase} /></Suspense></SceneBoundary>}</div>
     <main id="main">
       <div className="story" ref={story}>
         <section id="home" className="story-chapter hero" data-section>

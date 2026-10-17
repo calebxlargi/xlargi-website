@@ -1083,8 +1083,8 @@ export function createTerminalScene(renderer, mobile, manager) {
     scene,
     prepare() { textures.forEach(map => renderer.initTexture(map)); },
     update(elapsed, progress, camera) {
-      // Loop outside the central view; start each visit with the truck under the portal.
-      const phase = (elapsed * 0.85 + 20) % 44;
+      // Start with the entire cab upstream of the gate, then drive forward through it.
+      const phase = (elapsed * 0.85 + 10) % 44;
       waveBump.offset.set(elapsed*0.007,elapsed*0.003);
       waterColor.offset.set(elapsed*0.0015,elapsed*0.0008);
       truck.position.x = phase - 22;

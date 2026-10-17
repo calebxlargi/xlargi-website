@@ -15,7 +15,7 @@ async function pageAssetsReady() {
     document.fonts.load('400 16px Sora'),
     document.fonts.load('400 12px "IBM Plex Mono"'),
     ...Array.from(document.images, image => image.decode()),
-    ...['/scanner-poster.jpg', '/maersk-logo.svg'].map(src => {
+    ...['/maersk-logo.svg'].map(src => {
       const image = new Image(); image.src = src; return image.decode();
     }),
   ]);
