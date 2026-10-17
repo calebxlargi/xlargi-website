@@ -75,7 +75,29 @@ export function createTerminalScene(renderer, mobile) {
   const chrome = mat('#c4ced8', 0.2, 0.95);
   const concrete = mat('#626b75', 0.95, 0.05);
   const white = mat('#d4d9df', 0.4, 0.4);
-  const cabPaint = mat('#a51622', 0.65, 0.08);
+  // High-resolution enamel detail is neutral so red and ivory panels share the same finish.
+  const cabEnamel = canvasTexture(4096, 2048, (ctx, w, h) => {
+    ctx.fillStyle='#f8f8f6'; ctx.fillRect(0,0,w,h);
+    for(let i=0;i<60000;i++){
+      ctx.fillStyle=`rgba(80,75,68,${0.015+random()*0.045})`;
+      ctx.fillRect(random()*w,random()*h,0.5+random()*1.5,0.5+random()*2);
+    }
+    const roadDust=ctx.createLinearGradient(0,h*0.65,0,h);
+    roadDust.addColorStop(0,'#675d4900');roadDust.addColorStop(1,'#675d4925');
+    ctx.fillStyle=roadDust;ctx.fillRect(0,0,w,h);
+    for(let i=0;i<450;i++){
+      ctx.strokeStyle='#5f594510';ctx.lineWidth=0.5+random();
+      const x=random()*w,y=random()*h;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+random()*18,y+random()*85);ctx.stroke();
+    }
+  });
+  const cabMicro = canvasTexture(2048,2048,(ctx,w,h)=>{
+    const pixels=ctx.createImageData(w,h);
+    for(let i=0;i<pixels.data.length;i+=4){const v=170+Math.floor(random()*40);pixels.data[i]=pixels.data[i+1]=pixels.data[i+2]=v;pixels.data[i+3]=255;}
+    ctx.putImageData(pixels,0,0);
+  });
+  cabMicro.colorSpace=THREE.NoColorSpace;
+  const cabFinish={map:cabEnamel,roughnessMap:cabMicro,bumpMap:cabMicro,bumpScale:0.0015,envMapIntensity:0.32};
+  const cabPaint = mat('#d4d6d2', 0.78, 0.06, cabFinish);
   const glass = mat('#0e202d', 0.09, 0.75, { envMapIntensity: 1.8 });
   const lens = mat('#bac7d7', 0.1, 0.7);
   const glow = mat('#fff1d5', 0.2, 0.1, { emissive: '#fff0cf', emissiveIntensity: 5 });
@@ -107,7 +129,7 @@ export function createTerminalScene(renderer, mobile) {
   });
   const mainPaint = mat('#e0e2e0',0.86,0.12,{map:containerWeather,bumpMap:containerWeather,bumpScale:0.018});
   const fittingBlue = mat('#178bb5',0.55,0.45);
-  const cabAccent = mat('#397f95', 0.35, 0.5);
+  const cabAccent = mat('#b51a23', 0.76, 0.06, cabFinish);
   const chassisPaint = mat('#34383c', 0.82, 0.35, { map: paintWear });
   const rust = mat('#77533f', 0.96, 0.08);
   let disposed = false;
@@ -456,19 +478,20 @@ export function createTerminalScene(renderer, mobile) {
       return [x+0.105*(1-Math.pow(Math.abs(z)/1.24,4))+offset,y,z];
     });
   }
-  const frontMaterial=mat('#a51622',0.65,0.08,{side:THREE.DoubleSide});
+  const frontMaterial=mat('#d4d6d2',0.78,0.06,{...cabFinish,side:THREE.DoubleSide});
   mesh(truck,frontSkin(1.42,2.65,1.21,0.012),frontMaterial);
   // Curved high-roof sleeper, with the crown and side fairings blended together.
   const roofCurve=new THREE.CatmullRomCurve3([
     new THREE.Vector3(4.98,4.17,0),new THREE.Vector3(5.23,4.43,0),new THREE.Vector3(5.72,4.46,0),new THREE.Vector3(6.2,4.33,0),new THREE.Vector3(6.65,4.13,0),new THREE.Vector3(7.05,3.89,0)
   ]);
   const roofTop=patch(32,24,(u,v)=>{const p=roofCurve.getPoint(u);const z=(v*2-1)*1.16;return[p.x,p.y-0.13*Math.pow(Math.abs(z)/1.16,3),z];});
-  const roofMat=mat('#8d111c',0.68,0.08,{side:THREE.DoubleSide});mesh(truck,roofTop,roofMat);
+  const roofMat=mat('#b51a23',0.76,0.06,{...cabFinish,side:THREE.DoubleSide});mesh(truck,roofTop,roofMat);
   for(const side of [-1,1])mesh(truck,patch(32,6,(u,v)=>{const p=roofCurve.getPoint(u);return[p.x,THREE.MathUtils.lerp(3.87,p.y-0.13,v),side*1.16];}),roofMat);
   mesh(truck,patch(12,8,(u,v)=>[4.98,THREE.MathUtils.lerp(3.87,4.04,v),(u*2-1)*1.16]),roofMat);
   // The screen has a shallow wrap, a continuous rubber surround, and readable interior shadows.
   const seal=mat('#202b35',0.72,0.1,{side:THREE.DoubleSide});mesh(truck,frontSkin(2.53,3.69,1.17,0.032),seal);
-  const windscreenMap=canvasTexture(1024,512,(ctx,w,h)=>{
+  const windscreenMap=canvasTexture(2048,1024,(ctx,w,h)=>{
+    ctx.scale(2,2);w=1024;h=512;
     const sky=ctx.createLinearGradient(0,0,w,h);sky.addColorStop(0,'#77858f');sky.addColorStop(0.45,'#4c5d6b');sky.addColorStop(1,'#202f3c');ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
     // Soft seat silhouettes and dashboard avoid the opaque black-board appearance.
     ctx.fillStyle='#18253170';for(const x of [190,700]){ctx.beginPath();ctx.roundRect(x,150,140,235,24);ctx.fill();ctx.beginPath();ctx.roundRect(x+20,98,100,65,17);ctx.fill();}
@@ -498,6 +521,8 @@ export function createTerminalScene(renderer, mobile) {
     beam(truck, [5.73, 1.4, z], [5.73, 3.77, z], 0.009, black);
     beam(truck, [5.73, 2.52, z], [7.26, 2.52, z], 0.009, galvanized);
     box(truck, [0.19, 0.045, 0.04], [5.97, 2.47, z + side * 0.03], black);
+    profile(truck,[[4.88,1.17],[5.57,1.17],[5.79,1.45],[7.35,1.45],[7.38,1.58],[4.88,1.58]],0.018,cabAccent,z+side*0.014,0.008);
+    box(truck,[1.78,0.065,0.026],[5.82,1.74,z+side*0.035],black);
     // Mirror support and stacked main / wide-angle mirrors.
     beam(truck, [6.94, 3.62, z], [7.03, 3.61, z + side * 0.33], 0.021, black);
     beam(truck, [7.03, 3.61, z + side * 0.33], [7.1, 2.73, z + side * 0.33], 0.021, black);
@@ -526,7 +551,7 @@ export function createTerminalScene(renderer, mobile) {
     for (const x of [-6.2,-4.5,-2.8,-0.9,1,3.2]) box(truck,[0.11,0.065,0.045],[x,1.35,side*1.27],amber);
   }
   // Broad lower bumper, recessed upper grille and paired lower air intakes match the reference proportions.
-  const bumper=mat('#8d111c',0.68,0.08);
+  const bumper=mat('#b51a23',0.76,0.06,cabFinish);
   rounded(truck,[0.29,0.9,2.47],0.105,[7.49,0.96,0],bumper);
   rounded(truck,[0.07,0.07,2.3],0.025,[7.66,0.52,0],black);
   rounded(truck,[0.13,0.58,1.91],0.045,[7.57,1.86,0],galvanized);
