@@ -3,13 +3,14 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 // All dimensions are metres. Repeated structural parts are instanced by material.
-export function createTerminalScene(renderer, mobile) {
+export function createTerminalScene(renderer, mobile, manager) {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#141d2a');
   scene.fog = new THREE.FogExp2('#182332', 0.0055);
   const textures = new Set();
   const materials = new Set();
   const geometries = new Set();
+  const primitiveGeometries = new Map();
   const batches = new Map();
   const unitBox = new THREE.BoxGeometry(1, 1, 1);
   const unitCylinder = new THREE.CylinderGeometry(1, 1, 1, 12);
@@ -173,6 +174,13 @@ export function createTerminalScene(renderer, mobile) {
     matrix.compose(position, rotation, scale); instance(unitCylinder, parent, material, matrix);
   }
   function mesh(parent, geometry, material, at = [0, 0, 0]) {
+    // Share repeated primitive geometry instead of allocating a copy for every bolt/lens.
+    if (geometry.parameters && Object.values(geometry.parameters).every(value => value === null || typeof value !== 'object')) {
+      const key = geometry.type + JSON.stringify(geometry.parameters);
+      const shared = primitiveGeometries.get(key);
+      if (shared) { geometry.dispose(); geometry = shared; }
+      else primitiveGeometries.set(key, geometry);
+    }
     const object = new THREE.Mesh(geometry, material); object.position.set(...at);
     object.castShadow = true; object.receiveShadow = true; parent.add(object); return object;
   }
@@ -275,8 +283,8 @@ export function createTerminalScene(renderer, mobile) {
   // Shipping-line markings based on the supplied container-stack reference.
   const shippingNames=['MAERSK','COSCO','EVERGREEN','“K” LINE','Hapag-Lloyd','HYUNDAI','CHINA SHIPPING','P&O','CMA CGM','OOCL','ONE','MSC','YANG MING','WAN HAI'];
   const shippingMaterials=shippingNames.map((name,index)=>{
-    const label=canvasTexture(3072,640,(ctx,w,h)=>{
-      ctx.scale(2,2);w=1536;h=320;
+    const label=canvasTexture(2048,512,(ctx,w,h)=>{
+      ctx.scale(2048/1536,512/320);w=1536;h=320;
       const darkInk=index===1||index===4||index===11||index===12;
       const ink=darkInk?'#12324f':'#edf1ec';ctx.fillStyle=ink;
       ctx.textAlign='center';ctx.textBaseline='middle';
@@ -461,36 +469,32 @@ export function createTerminalScene(renderer, mobile) {
       for(let i=0;i<6;i++)box(scene,[0.2,0.012,0.025],[-0.48,1.2+i*0.045,z+0.86],galvanized);
       beam(scene,[-0.37,1,z+0.55],[-0.37,0.35,z+0.55],0.018,black);
     }
-    // Profiled scanner extrusion: a dark recessed lower array and tall brushed-metal head.
-    const inside=z+(z>0?-0.1:0.1);
-    const column=new THREE.Group();column.position.set(1.3,0,inside);column.scale.set(0.68,0.92,0.72);scene.add(column);
-    rounded(column,[0.3,0.14,0.68],0.025,[0,0.42,0],scannerMetal);
-    rounded(column,[0.24,4.42,0.4],0.025,[0,2.7,0],scannerHousing);
-    rounded(column,[0.24,2.58,0.44],0.025,[0,6.17,0],scannerMetal);
-    // Rear support and narrow raised side flanges define the actual extrusion depth.
-    box(column,[0.075,6.85,0.11],[0.17,3.9,0],scannerMetal);
-    for(const side of [-1,1]){
-      rounded(column,[0.08,4.46,0.055],0.012,[-0.135,2.7,side*0.205],scannerHousing);
-      box(column,[0.035,2.38,0.026],[-0.143,6.17,side*0.19],scannerMetal);
-      box(column,[0.025,2.36,0.018],[-0.16,6.17,side*0.145],galvanized);
+    // Broad backplates run along the traffic direction, with a thin edge across the lane.
+    const inside=z+(z>0?-0.1:0.1),facing=z>0?-1:1;
+    const plate=new THREE.Group();plate.position.set(1.3,0,inside);scene.add(plate);
+    const faceZ=facing*0.045;
+    rounded(plate,[0.84,6.65,0.065],0.012,[0,3.67,0],scannerMetal);
+    // The lower dark panel and exposed upper aluminium are coplanar surfaces.
+    rounded(plate,[0.74,4.52,0.012],0.006,[0,2.64,faceZ],scannerHousing);
+    box(plate,[0.68,4.4,0.006],[0,2.64,faceZ+facing*0.009],scannerFace);
+    for(const edge of [-1,1]){
+      box(plate,[0.022,6.5,0.025],[edge*0.407,3.67,0],scannerMetal);
+      box(plate,[0.017,2.02,0.009],[edge*0.35,5.9,faceZ],galvanized);
     }
-    rounded(column,[0.018,4.25,0.265],0.009,[-0.136,2.7,0],scannerFace);
-    box(column,[0.012,4.15,0.012],[-0.151,2.7,0.09],scannerStatus);
-    for(const y of [0.65,2.4,4.7,5.1,7.27])for(const dz of [-0.17,0.17]){
-      const screw=mesh(column,new THREE.CylinderGeometry(0.018,0.018,0.012,6),chrome,[-0.155,y,dz]);screw.rotation.z=Math.PI/2;
-      beam(column,[-0.164,y-0.007,dz],[-0.164,y+0.007,dz],0.003,black);
+    // Shallow folded returns and two rear stiffeners keep this a sheet-metal backplate.
+    for(const edge of [-1,1])box(plate,[0.035,6.35,0.065],[edge*0.27,3.67,-facing*0.055],scannerMetal);
+    box(plate,[0.86,0.035,0.085],[0,7.01,0],scannerMetal);
+    for(const y of [0.55,2.55,4.82,6.8])for(const x of [-0.35,0.35]){
+      const screw=mesh(plate,new THREE.CylinderGeometry(0.013,0.013,0.009,6),chrome,[x,y,faceZ+facing*0.014]);screw.rotation.x=Math.PI/2;
     }
-    for(const y of [0.95,3.15,5.2]){
-      box(column,[0.19,0.12,0.52],[0.2,y,0],scannerMetal);
-      for(const dz of [-0.22,0.22])beam(column,[0.22,y-0.07,dz],[0.22,y+0.07,dz],0.021,chrome);
+    box(plate,[0.96,0.075,0.37],[0,0.34,0],scannerMetal);
+    for(const x of [-0.38,0.38])for(const dz of [-0.12,0.12])beam(plate,[x,0.38,dz],[x,0.43,dz],0.018,chrome);
+    for(const y of [0.72,3.4,6.1]){
+      box(plate,[0.65,0.09,0.12],[0,y,-facing*0.1],scannerMetal);
+      for(const x of [-0.26,0.26])box(plate,[0.08,0.19,0.04],[x,y,-facing*0.17],scannerMetal);
     }
-    rounded(column,[0.29,0.06,0.48],0.018,[0,7.49,0],scannerMetal);
-    box(column,[0.25,0.055,0.44],[0,4.88,0],black);
-    decal(column,scannerLabel,0.24,0.12,[-0.126,6.92,0],-Math.PI/2);
-    for(const dx of [-0.09,0.09])for(const dz of [-0.25,0.25])beam(column,[dx,0.48,dz],[dx,0.54,dz],0.02,chrome);
-    // Cable gland, flexible lead and protective rear conduit terminate at the plinth.
-    beam(column,[0.1,0.65,0.16],[0.25,0.65,0.16],0.035,black);
-    beam(column,[0.25,0.65,0.16],[0.25,0.35,0.16],0.025,scannerHousing);
+    decal(plate,scannerLabel,0.25,0.12,[0,6.65,faceZ+facing*0.006],facing>0?0:Math.PI);
+    beam(plate,[0.25,0.7,-facing*0.1],[0.25,0.35,-facing*0.1],0.02,scannerHousing);
     // Mid-height auxiliary sensor and cabling on the frame.
     beam(scene,[-0.75,2.9,z],[-0.75,2.9,z+(z>0?-0.57:0.57)],0.026,steel);
     bulletCamera(scene,[-0.75,3.05,z+(z>0?-0.5:0.5)],[0.3,-0.04,z>0?-1:1],0.8);
@@ -714,7 +718,7 @@ export function createTerminalScene(renderer, mobile) {
   for (const side of [-1, 1]) decal(truck, idTexture, 1.5, 0.75, [-6.25, 3.6, side * 1.289], side < 0 ? Math.PI : 0);
   decal(truck,idTexture,1.1,1.3,[-7.37,2.85,0.62],-Math.PI/2);
   // Original brand artwork is projected onto a skin that follows every corrugation.
-  const brandMap = new THREE.TextureLoader().load('/maersk-logo.svg', map => { if (disposed) map.dispose(); });
+  const brandMap = new THREE.TextureLoader(manager).load('/maersk-logo.svg', map => { if (disposed) map.dispose(); });
   brandMap.colorSpace=THREE.SRGBColorSpace;brandMap.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());textures.add(brandMap);
   const brandMaterial=mat('#ffffff',0.9,0.05,{map:brandMap,transparent:true,alphaTest:0.04,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2,side:THREE.DoubleSide});
   const logoWidth=8.2, logoHeight=logoWidth/(1024/232), left=-1.2-logoWidth/2;
@@ -1092,6 +1096,32 @@ export function createTerminalScene(renderer, mobile) {
     instanced.castShadow = parent !== scene || material === steel || material === cranePaint;
     instanced.receiveShadow = true; instanced.computeBoundingSphere(); parent.add(instanced);
   })));
+  // Batch small opaque parts after all local rotations have been applied. Wheel
+  // groups remain independent so their rotation and the truck animation are preserved.
+  scene.updateMatrixWorld(true);
+  const smallParts = new Map();
+  scene.traverse(object => {
+    if (!object.isMesh || object.isInstancedMesh || object.material.transparent || object.name) return;
+    let root = scene;
+    for (let ancestor = object.parent; ancestor && ancestor !== scene; ancestor = ancestor.parent) {
+      if (ancestor.name === 'truck-wheel') { root = ancestor; break; }
+      if (ancestor === truck) { root = truck; break; }
+    }
+    const key = [root.uuid, object.geometry.uuid, object.material.uuid, object.castShadow].join('/');
+    if (!smallParts.has(key)) smallParts.set(key, { root, objects: [] });
+    smallParts.get(key).objects.push(object);
+  });
+  for (const { root, objects } of smallParts.values()) {
+    if (objects.length < 2) continue;
+    const first = objects[0], inverse = new THREE.Matrix4().copy(root.matrixWorld).invert();
+    const combined = new THREE.InstancedMesh(first.geometry, first.material, objects.length);
+    objects.forEach((object, index) => {
+      combined.setMatrixAt(index, new THREE.Matrix4().multiplyMatrices(inverse, object.matrixWorld));
+      object.removeFromParent();
+    });
+    combined.castShadow = first.castShadow; combined.receiveShadow = true;
+    combined.computeBoundingSphere(); root.add(combined);
+  }
   // The secondary truck uses the full production mesh instead of a box cab and flat wheels.
   const yardTruck=truck.clone(true);yardTruck.scale.setScalar(0.8);yardTruck.position.set(-18,0,-18);
   const yardWheels=[];
@@ -1121,6 +1151,7 @@ export function createTerminalScene(renderer, mobile) {
   ];
   return {
     scene,
+    prepare() { textures.forEach(map => renderer.initTexture(map)); },
     update(elapsed, progress, camera) {
       // Loop outside the central view; start each visit with the truck under the portal.
       const phase = (elapsed * 0.85 + 20) % 44;

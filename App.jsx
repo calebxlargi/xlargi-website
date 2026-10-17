@@ -1,7 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
-import ContainerScanner from './ContainerScanner';
+import React, { Component, Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
+const ContainerScanner = lazy(() => import('./ContainerScanner'));
+const ContactDialog = lazy(() => import('./ContactDialog'));
 import NeuralGraphic from './NeuralGraphic';
-import { useForm, ValidationError } from '@formspree/react';
+import Arrow from './Arrow';
+
 
 const chapters = [
   { id: 'home', label: 'Overview' },
@@ -9,37 +11,41 @@ const chapters = [
   { id: 'automation', label: 'Automation' },
   { id: 'intelligence', label: 'Intelligence' },
 ];
-const Arrow = ({ down = false }) => <span aria-hidden="true">{down ? '↓' : '↗'}</span>;
 
-function ContactDialog({ onClose }) {
-  const dialog = useRef(null);
-  const [formState, submit] = useForm('mjyglvln', { data: { subject: 'XLARGI website enquiry' } });
-  useEffect(() => {
-    const element = dialog.current;
-    element.showModal();
-    const old = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = old; };
-  }, []);
-  return <dialog ref={dialog} className="contact-dialog" aria-labelledby="contact-title" onCancel={onClose} onClick={event => { if (event.target === dialog.current) onClose(); }}>
-    <div className="dialog-inner">
-      <button className="close-button" type="button" onClick={onClose} aria-label="Close contact form">×</button>
-      <p className="eyebrow">LET’S BUILD WHAT’S NEXT</p>
-      <h2 id="contact-title">Start a conversation.</h2>
-      <p className="dialog-intro">Tell us where you want to go. We’ll help you get there.</p>
-      {formState.succeeded ? <div className="contact-success" role="status"><h3>Message received.</h3><p>Thank you for getting in touch. We’ll be in touch soon.</p><button type="button" className="pill light" onClick={onClose}>Done <Arrow /></button></div> : <form action="https://formspree.io/f/mjyglvln" method="POST" onSubmit={submit} aria-busy={formState.submitting}>
-        <input type="text" name="_gotcha" tabIndex="-1" autoComplete="off" className="contact-honeypot" aria-hidden="true" />
-        <div className="form-row"><label>Your name<input name="name" autoComplete="name" required /></label><label>Work email<input type="email" name="email" autoComplete="email" required /></label></div>
-        <label>Company<input name="company" autoComplete="organization" /></label>
-        <label>What are you working on?<textarea name="message" rows="3" required /></label>
-        <div className="contact-errors" role="alert"><ValidationError field="name" prefix="Name" errors={formState.errors} /><ValidationError field="email" prefix="Email" errors={formState.errors} /><ValidationError field="message" prefix="Message" errors={formState.errors} /><ValidationError errors={formState.errors} /></div>
-        <button type="submit" className="pill light" disabled={formState.submitting}>{formState.submitting ? 'Sending…' : 'Message us'} <Arrow /></button>
-      </form>}
-    </div>
-  </dialog>;
+
+class SceneBoundary extends Component {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  componentDidCatch() { this.props.onError(); }
+  render() { return this.state.failed ? null : this.props.children; }
+}
+
+function LoadingScreen({ phase, error, onContinue }) {
+  return <div className="site-loader" role="status" aria-live="polite" aria-busy={!error}>
+    <img src="/xlargi-logo.svg" alt="XLARGI" width="279" height="56" />
+    <div className={`loader-track ${error ? 'is-stopped' : ''}`} aria-hidden="true"><span /></div>
+    <p>{error ? 'The 3D scene could not finish loading.' : phase}</p>
+    {error && <div className="loader-actions"><button className="pill" onClick={() => window.location.reload()}>Try again</button><button className="pill light" onClick={onContinue}>Continue to website</button></div>}
+  </div>;
 }
 
 export default function App() {
+  const [ready, setReady] = useState(false);
+  const [phase, setPhase] = useState('Loading the experience');
+  const [loadError, setLoadError] = useState(false);
+  const [skipScene, setSkipScene] = useState(false);
+  const handleSceneReady = useCallback(() => { setLoadError(false); setReady(true); }, []);
+  const handleSceneError = useCallback(() => setLoadError(true), []);
+  const handlePhase = useCallback(value => setPhase(value), []);
+  useEffect(() => {
+    document.getElementById('boot-loader')?.remove();
+  }, []);
+  useEffect(() => {
+    if (ready) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previous; };
+  }, [ready]);
   const [menu, setMenu] = useState(false);
   const [contact, setContact] = useState(false);
   const [active, setActive] = useState('home');
@@ -76,6 +82,8 @@ export default function App() {
   }, [menu]);
 
   return <>
+    {!ready && <LoadingScreen phase={phase} error={loadError} onContinue={() => { setSkipScene(true); setReady(true); }} />}
+    <div inert={!ready ? '' : undefined} aria-hidden={!ready ? true : undefined}>
     <a href="#main" className="skip-link">Skip to content</a>
     <header className="site-header">
       <a className="wordmark" href="#home" aria-label="XLARGI home" onClick={() => setMenu(false)}><img src="/xlargi-logo.svg" alt="XLARGI" width="558" height="111" /></a>
@@ -83,7 +91,7 @@ export default function App() {
       <div className="header-actions"><button className="pill compact" onClick={() => setContact(true)}>Contact <Arrow /></button><button className={`menu-toggle ${menu ? 'open' : ''}`} aria-label={menu ? 'Close menu' : 'Open menu'} aria-expanded={menu} aria-controls="site-menu" onClick={() => setMenu(value => !value)}><span /><span /></button></div>
     </header>
     {menu && <nav id="site-menu" className="menu-panel" aria-label="Main navigation"><span className="eyebrow">EXPLORE XLARGI</span>{[...chapters, { id: 'solutions', label: 'Our solutions' }, { id: 'about', label: 'The company' }].map((item, i) => <a key={item.id} href={`#${item.id}`} onClick={() => setMenu(false)}><small>0{i + 1}</small>{item.label}<Arrow /></a>)}<button onClick={() => { setMenu(false); setContact(true); }}>Let’s talk <Arrow /></button></nav>}
-    <div className="story-scene"><ContainerScanner progressRef={progressRef} /></div>
+    <div className="story-scene">{!skipScene && <SceneBoundary onError={handleSceneError}><Suspense fallback={null}><ContainerScanner suspended={contact || menu} progressRef={progressRef} onReady={handleSceneReady} onError={handleSceneError} onPhase={handlePhase} /></Suspense></SceneBoundary>}</div>
     <main id="main">
       <div className="story" ref={story}>
         <section id="home" className="story-chapter hero" data-section>
@@ -131,7 +139,8 @@ export default function App() {
       ].map(([num, title, body]) => <details className="expertise-item reveal" key={num}><summary><span>{num}</span><h3>{title}</h3><b>+</b></summary><p>{body}</p></details>)}</div></section>
       <section className="contact-section section-pad" id="contact" data-section><p className="eyebrow reveal">YOUR NEXT CHAPTER STARTS HERE</p><h2 className="reveal">Ready to move<br />things forward?</h2><button className="pill light reveal" onClick={() => setContact(true)}>Talk to XLARGI <Arrow /></button></section>
     </main>
-    <footer className="site-footer"><a className="wordmark" href="#home"><img src="/xlargi-logo.svg" alt="XLARGI" width="558" height="111" /></a><span>© {new Date().getFullYear()} XLARGI SDN. BHD.</span><a href="#home">Back to top ↑</a><span className="footer-note">Intelligence. Engineered.</span></footer>
-    {contact && <ContactDialog onClose={() => setContact(false)} />}
+    <footer className="site-footer"><a className="wordmark" href="#home"><img src="/xlargi-logo.svg" alt="XLARGI" width="558" height="111" /></a><span>© {new Date().getFullYear()} XLARGI SDN. BHD.</span><a href="#home">Back to top <Arrow direction="up" /></a><span className="footer-note">Intelligence. Engineered.</span></footer>
+    {contact && <Suspense fallback={<div className="contact-pending" role="status">Opening contact form…</div>}><ContactDialog onClose={() => setContact(false)} /></Suspense>}
+    </div>
   </>;
 }

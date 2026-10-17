@@ -3,6 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" href="https://njwscgft917wos7z.public.blob.vercel-storage.com/xlargi_favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" href="/xlargi-logo.svg" as="image" />
+    <link rel="preload" href="/maersk-logo.svg" as="image" />
+    <link rel="preload" href="/scanner-poster.jpg" as="image" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>XLARGI | Connected Intelligence</title>
     <meta name="description" content="XLARGI connects AI, automation, and integrated systems to solve complex operational challenges. Digital transformation, container inspection, and terminal automation." />
@@ -11,7 +17,9 @@
     <meta property="og:description" content="Moving industries with connected intelligence. AI, automation, and integrated systems engineered for the real world." />
   </head>
   <body>
+    <div id="boot-loader" role="status" aria-live="polite" style="position:fixed;inset:0;z-index:1001;background:#091118;color:#c8dce0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;font:11px monospace;letter-spacing:.12em"><img src="/xlargi-logo.svg" alt="XLARGI" width="279" height="56" /><span>LOADING THE EXPERIENCE</span></div>
     <div id="root"></div>
+    <noscript><style>#boot-loader{display:none!important}</style><p style="padding:40px;color:white;background:#091118">Please enable JavaScript to explore XLARGI.</p></noscript>
     <script type="module" src="/main.jsx"></script>
   </body>
 </html>

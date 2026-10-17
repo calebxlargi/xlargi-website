@@ -7,69 +7,158 @@ import { SMAAPass } from 'three/addons/postprocessing/SMAAPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { createTerminalScene } from './terminalScene';
 
-export default function ContainerScanner({ progressRef }) {
+const nextFrame = () => new Promise(resolve => requestAnimationFrame(resolve));
+
+async function pageAssetsReady() {
+  await Promise.all([
+    fetch('/icons/arrows.svg').then(response => { if (!response.ok) throw new Error('Arrow icons failed to load'); return response.text(); }),
+    document.fonts.load('400 16px Sora'),
+    document.fonts.load('400 12px "IBM Plex Mono"'),
+    ...Array.from(document.images, image => image.decode()),
+    ...['/scanner-poster.jpg', '/maersk-logo.svg'].map(src => {
+      const image = new Image(); image.src = src; return image.decode();
+    }),
+  ]);
+  await document.fonts.ready;
+}
+
+export default function ContainerScanner({ progressRef, onReady, onError, onPhase, suspended = false }) {
   const host = useRef(null);
   const [paused, setPaused] = useState(false);
   const [sceneVisible, setSceneVisible] = useState(true);
   const pauseRef = useRef(false);
-  useEffect(() => { pauseRef.current = paused; }, [paused]);
+  const suspendedRef = useRef(suspended);
+  const [initialized, setInitialized] = useState(false);
+  const dirty = useRef(true);
+  useEffect(() => { suspendedRef.current = suspended; dirty.current = true; }, [suspended]);
+  useEffect(() => { pauseRef.current = paused; dirty.current = true; }, [paused]);
 
   useEffect(() => {
     const mount = host.current;
-    const mobile = window.innerWidth < 700;
-    let renderer;
-    try { renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' }); }
-    catch { return; }
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, mobile ? 1.5 : 2));
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.05;
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFShadowMap;
-    mount.appendChild(renderer.domElement);
-    const terminal = createTerminalScene(renderer, mobile);
-    const camera = new THREE.PerspectiveCamera(43, 1, 0.2, 450);
-    // The composer renders offscreen: its target needs MSAA independently of the canvas.
-    const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: Math.min(mobile ? 2 : 4, renderer.capabilities.maxSamples) });
-    const composer = new EffectComposer(renderer, target);
-    composer.addPass(new RenderPass(terminal.scene, camera));
-    const antialias = new SMAAPass();
-    composer.addPass(antialias);
-    const output = new OutputPass(); composer.addPass(output);
-    function resize() {
-      const { width, height } = mount.getBoundingClientRect();
-      if (!width || !height) return;
-      renderer.setSize(width, height); composer.setSize(width, height);
-      camera.aspect = width / height; camera.updateProjectionMatrix();
+    setInitialized(false);
+    let cancelled = false;
+    let dispose = () => {};
+    const watchdog = window.setTimeout(() => { if (!cancelled) onError(); }, 30000);
+    const assets = pageAssetsReady();
+    // Attach an error handler immediately while the procedural scene is being prepared.
+    assets.catch(() => {});
+    async function initialize() {
+      // Paint the loader first; deferring also avoids duplicate construction in Strict Mode.
+      await nextFrame(); await nextFrame();
+      if (cancelled) return;
+      const started = performance.now();
+      onPhase('Building the terminal');
+      const mobile = window.innerWidth < 700;
+      let renderer, terminal, composer, antialias, output, observer, intersection;
+      dispose = () => {
+        renderer?.setAnimationLoop(null);
+        observer?.disconnect(); intersection?.disconnect();
+        antialias?.dispose(); output?.dispose(); composer?.dispose(); terminal?.dispose();
+        renderer?.dispose(); renderer?.domElement.remove();
+      };
+      try {
+        renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
+        let pixelRatio = Math.min(window.devicePixelRatio, mobile ? 1.5 : 2);
+        renderer.setPixelRatio(pixelRatio);
+        renderer.info.autoReset = false;
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.05;
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFShadowMap;
+        mount.appendChild(renderer.domElement);
+        const failedAssets = [];
+        const manager = new THREE.LoadingManager();
+        const sceneAssets = new Promise(resolve => { manager.onLoad = resolve; });
+        manager.onError = url => failedAssets.push(url);
+        manager.itemStart('terminal');
+        terminal = createTerminalScene(renderer, mobile, manager);
+        manager.itemEnd('terminal');
+        const camera = new THREE.PerspectiveCamera(43, 1, 0.2, 450);
+        // MSAA belongs on the offscreen target; canvas AA would duplicate its cost.
+        const target = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: Math.min(mobile ? 2 : 4, renderer.capabilities.maxSamples) });
+        composer = new EffectComposer(renderer, target);
+        composer.addPass(new RenderPass(terminal.scene, camera));
+        antialias = new SMAAPass(); composer.addPass(antialias);
+        output = new OutputPass(); composer.addPass(output);
+        function resize() {
+          const { width, height } = mount.getBoundingClientRect();
+          if (!width || !height) return;
+          renderer.setSize(width, height); composer.setSize(width, height);
+          camera.aspect = width / height; camera.updateProjectionMatrix();
+          dirty.current = true;
+        }
+        observer = new ResizeObserver(resize); observer.observe(mount); resize();
+        onPhase('Loading textures and fonts');
+        // SMAA's bundled lookup images load asynchronously, outside LoadingManager.
+        await Promise.all([assets, sceneAssets, antialias._areaTexture.image.decode(), antialias._searchTexture.image.decode()]);
+        if (cancelled) return;
+        if (failedAssets.length) throw new Error('A terminal texture failed to load');
+        onPhase('Preparing lighting');
+        await nextFrame();
+        if (cancelled) return;
+        terminal.prepare();
+        terminal.update(0, progressRef.current, camera);
+        await renderer.compileAsync(terminal.scene, camera);
+        if (cancelled) return;
+        let renderedFrames = 0;
+        function renderFrame() {
+          renderer.info.reset(); composer.render();
+          if (import.meta.env.DEV) mount.dataset.renderedFrames = String(++renderedFrames);
+        }
+        renderFrame();
+        // Reveal only after a fully textured frame has actually been presented.
+        await nextFrame(); await nextFrame();
+        if (cancelled) return;
+        clearTimeout(watchdog);
+        mount.dataset.sceneState = 'ready';
+        if (import.meta.env.DEV) console.info('XLARGI scene ready', JSON.stringify({ initializationMs: Math.round(performance.now() - started), drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, textures: renderer.info.memory.textures }));
+        setInitialized(true); onReady();
+        let visible = true, elapsed = 0, previous = 0, lastRendered = 0, lastProgress = -1;
+        let frameTotal = 0, frameCount = 0;
+        const interval = mobile ? 1000 / 30 : 1000 / 60;
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+        const visibleSections = new Set();
+        intersection = new IntersectionObserver(entries => {
+          entries.forEach(entry => entry.isIntersecting ? visibleSections.add(entry.target) : visibleSections.delete(entry.target));
+          visible = visibleSections.size > 0;
+          setSceneVisible(visible); dirty.current = true;
+        });
+        document.querySelectorAll('.story, #about, #expertise').forEach(section => intersection.observe(section));
+        renderer.setAnimationLoop(time => {
+          const delta = previous ? Math.min((time - previous) / 1000, 0.05) : 0;
+          previous = time;
+          if (!visible || document.hidden) { lastRendered = 0; return; }
+          const animated = !pauseRef.current && !reduced.matches && !suspendedRef.current;
+          if (animated) elapsed += delta;
+          const progress = progressRef.current;
+          if (!animated && progress === lastProgress && !dirty.current) { lastRendered = 0; return; }
+          if (lastRendered && time - lastRendered < interval - 1) return;
+          // Reduce render resolution only on sustained slow devices. MSAA/SMAA stay enabled.
+          if (animated && lastRendered) {
+            frameTotal += time - lastRendered; frameCount++;
+            if (frameCount === 90) {
+              if (frameTotal / frameCount > (mobile ? 46 : 27) && pixelRatio > (mobile ? 1 : 1.25)) {
+                pixelRatio = Math.max(mobile ? 1 : 1.25, pixelRatio - 0.25);
+                renderer.setPixelRatio(pixelRatio); composer.setPixelRatio(pixelRatio); resize();
+              }
+              frameTotal = 0; frameCount = 0;
+            }
+          }
+          terminal.update(elapsed, progress, camera); renderFrame();
+          lastProgress = progress; dirty.current = false; lastRendered = time;
+        });
+      } catch {
+        if (!cancelled) { clearTimeout(watchdog); onError(); }
+      }
     }
-    const observer = new ResizeObserver(resize); observer.observe(mount); resize();
-    let visible = true, elapsed = 0, previous = 0;
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const visibleSections = new Set();
-    const intersection = new IntersectionObserver(entries => {
-      entries.forEach(entry => entry.isIntersecting ? visibleSections.add(entry.target) : visibleSections.delete(entry.target));
-      visible = visibleSections.size > 0;
-      setSceneVisible(visible);
-    });
-    document.querySelectorAll('.story, #about, #expertise').forEach(section => intersection.observe(section));
-    renderer.setAnimationLoop(time => {
-      const delta = previous ? Math.min((time - previous) / 1000, 0.05) : 0;
-      previous = time;
-      if (!visible || document.hidden) return;
-      if (!pauseRef.current && !reduced.matches) elapsed += delta;
-      terminal.update(elapsed, progressRef?.current || 0, camera);
-      composer.render();
-    });
-    return () => {
-      renderer.setAnimationLoop(null); observer.disconnect(); intersection.disconnect();
-      antialias.dispose(); output.dispose(); composer.dispose(); terminal.dispose();
-      renderer.dispose(); renderer.domElement.remove();
-    };
-  }, [progressRef]);
+    initialize();
+    return () => { cancelled = true; clearTimeout(watchdog); dispose(); };
+  }, [progressRef, onReady, onError, onPhase]);
 
   return <div className="scanner-background">
     <div ref={host} className="scanner-stage" role="img" aria-label="Detailed night-time container terminal with a moving truck, steel inspection portal, red scanning lights, quay cranes and cargo ships" />
     <div className="scanner-vignette" />
-    {createPortal(<button type="button" className="scanner-toggle" hidden={!sceneVisible} aria-pressed={paused} onClick={() => setPaused(value => !value)}>{paused ? 'Play animation' : 'Pause animation'}</button>, document.body)}
+    {createPortal(<button type="button" className="scanner-toggle" hidden={!sceneVisible || !initialized} aria-pressed={paused} onClick={() => setPaused(value => !value)}>{paused ? 'Play animation' : 'Pause animation'}</button>, document.body)}
   </div>;
 }
