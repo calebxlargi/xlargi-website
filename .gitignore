@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.DS_Store
+.vercel
+.env*
+
+# Local agent tooling
+.agents/
+skills-lock.json

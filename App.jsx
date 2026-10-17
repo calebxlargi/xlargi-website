@@ -1,819 +1,137 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import ContainerScanner from './ContainerScanner';
+import NeuralGraphic from './NeuralGraphic';
+import { useForm, ValidationError } from '@formspree/react';
 
-const App = () => {
-  const videoRef = useRef(null);
+const chapters = [
+  { id: 'home', label: 'Overview' },
+  { id: 'inspection', label: 'Inspection' },
+  { id: 'automation', label: 'Automation' },
+  { id: 'intelligence', label: 'Intelligence' },
+];
+const Arrow = ({ down = false }) => <span aria-hidden="true">{down ? '↓' : '↗'}</span>;
 
-  // Scroll Reveal Logic
+function ContactDialog({ onClose }) {
+  const dialog = useRef(null);
+  const [formState, submit] = useForm('mjyglvln', { data: { subject: 'XLARGI website enquiry' } });
   useEffect(() => {
-    const revealElements = document.querySelectorAll('.reveal');
-
-    const reveal = () => {
-      for (let i = 0; i < revealElements.length; i++) {
-        let windowHeight = window.innerHeight;
-        let elementTop = revealElements[i].getBoundingClientRect().top;
-        let elementVisible = 150;
-
-        if (elementTop < windowHeight - elementVisible) {
-          revealElements[i].classList.add("active");
-        }
-      }
-    };
-
-    window.addEventListener("scroll", reveal);
-    reveal(); // Trigger once on load
-
-    return () => window.removeEventListener("scroll", reveal);
+    const element = dialog.current;
+    element.showModal();
+    const old = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = old; };
   }, []);
-
-  // Navbar Scroll Logic
-  useEffect(() => {
-    const handleScroll = () => {
-      const nav = document.getElementById('navbar');
-      if (nav) {
-        if (window.scrollY > 50) {
-          nav.classList.add('shadow-lg');
-          nav.style.background = 'rgba(5, 5, 5, 0.7)';
-          nav.style.backdropFilter = 'blur(20px)';
-        } else {
-          nav.classList.remove('shadow-lg');
-          nav.style.background = 'rgba(5, 5, 5, 0.3)';
-          nav.style.backdropFilter = 'blur(10px)';
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Force Video Autoplay (Mobile Fix)
-  useEffect(() => {
-    if (videoRef.current) {
-        videoRef.current.play().catch(error => {
-            console.log("Autoplay prevented:", error);
-        });
-    }
-  }, []);
-
-  // Canvas Particle Animation
-  useEffect(() => {
-    const canvas = document.getElementById('hero-canvas');
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    let width, height;
-    let particles = [];
-    let animationFrameId;
-
-    const initCanvas = () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    };
-
-    class Particle {
-      constructor() {
-        this.x = Math.random() * width;
-        this.y = Math.random() * height;
-        this.vx = (Math.random() - 0.5) * 0.5;
-        this.vy = (Math.random() - 0.5) * 0.5;
-        this.size = Math.random() * 2 + 1;
-      }
-
-      update() {
-        this.x += this.vx;
-        this.y += this.vy;
-
-        if (this.x < 0 || this.x > width) this.vx *= -1;
-        if (this.y < 0 || this.y > height) this.vy *= -1;
-      }
-
-      draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(0, 242, 255, 0.5)';
-        ctx.fill();
-      }
-    }
-
-    const createParticles = () => {
-      particles = [];
-      const particleCount = window.innerWidth < 768 ? 40 : 80;
-      for (let i = 0; i < particleCount; i++) {
-        particles.push(new Particle());
-      }
-    };
-
-    const animateCanvas = () => {
-      ctx.clearRect(0, 0, width, height);
-      
-      for (let i = 0; i < particles.length; i++) {
-        particles[i].update();
-        particles[i].draw();
-
-        for (let j = i; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-
-          if (distance < 120) {
-            ctx.beginPath();
-            ctx.strokeStyle = `rgba(112, 0, 255, ${1 - distance / 120})`;
-            ctx.lineWidth = 0.5;
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.stroke();
-          }
-        }
-      }
-      animationFrameId = requestAnimationFrame(animateCanvas);
-    };
-
-    initCanvas();
-    createParticles();
-    animateCanvas();
-
-    const handleResize = () => {
-      initCanvas();
-      createParticles();
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
-
-  return (
-    <div className="antialiased selection:bg-primary selection:text-black font-sans text-gray-100 bg-dark">
-      {/* Navigation */}
-      <nav className="fixed w-full z-50 nav-glass transition-all duration-300" id="navbar">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            <div className="flex-shrink-0">
-              <a href="#" className="flex items-center gap-2">
-                 <img 
-                   src="lumima_logo_website.png" 
-                   alt="XLARGI Logo" 
-                   className="h-10 w-auto"
-                   onError={(e) => {
-                     e.target.onerror = null; 
-                     e.target.style.display = 'none';
-                     e.target.nextSibling.style.display = 'block';
-                   }}
-                 />
-                 <span className="text-2xl font-bold tracking-tighter text-white hidden">
-                    XLARGI<span className="text-primary">.</span>
-                 </span>
-              </a>
-            </div>
-            <div className="hidden md:block">
-              <div className="ml-10 flex items-baseline space-x-8">
-                <a href="#home" className="text-gray-300 hover:text-white hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">Home</a>
-                <a href="#about" className="text-gray-300 hover:text-white hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">About</a>
-                <a href="#adds-feature" className="text-gray-300 hover:text-white hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">ADDS</a>
-                <a href="#solutions" className="text-gray-300 hover:text-white hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">Solutions</a>
-                <a href="#expert-services" className="text-gray-300 hover:text-white hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">Services</a>
-                <a href="#port-management" className="text-gray-300 hover:text-white hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">Port Systems</a>
-                <a href="#case-study" className="text-gray-300 hover:text-white hover:text-primary transition-colors px-3 py-2 rounded-md text-sm font-medium">Case Studies</a>
-                <a href="#contact" className="btn-modern px-6 py-2.5 text-sm shadow-lg">Contact Us</a>
-              </div>
-            </div>
-            {/* Mobile menu button */}
-            <div className="-mr-2 flex md:hidden">
-              <button type="button" className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-800 focus:outline-none" onClick={() => document.getElementById('mobile-menu').classList.toggle('hidden')}>
-                <span className="sr-only">Open main menu</span>
-                <i className="fa-solid fa-bars text-xl"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-        {/* Mobile Menu */}
-        <div className="hidden md:hidden bg-black/95 backdrop-blur-xl absolute w-full" id="mobile-menu">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-b border-gray-800">
-            <a href="#home" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Home</a>
-            <a href="#about" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">About</a>
-            <a href="#adds-feature" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">ADDS</a>
-            <a href="#solutions" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Solutions</a>
-            <a href="#expert-services" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Services</a>
-            <a href="#port-management" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Port Systems</a>
-            <a href="#case-study" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Case Studies</a>
-            <a href="#contact" className="text-primary font-bold block px-3 py-2 rounded-md text-base">Contact Us</a>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <section id="home" className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
-        {/* Video Background */}
-        <div className="absolute inset-0 w-full h-full z-0">
-          <video 
-            ref={videoRef}
-            className="w-full h-full object-cover opacity-80" 
-            autoPlay 
-            muted 
-            loop 
-            playsInline
-          >
-            <source src="https://njwscgft917wos7z.public.blob.vercel-storage.com/xlargi_hero.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-          {/* Overlay gradient - Made lighter to show video more */}
-          <div className="absolute inset-0 bg-gradient-to-b from-dark/40 via-dark/20 to-dark"></div>
-        </div>
-
-        {/* Canvas Background */}
-        <div id="canvas-container" className="opacity-20 mix-blend-screen">
-          <canvas id="hero-canvas"></canvas>
-        </div>
-
-        {/* Ambient Glow Elements */}
-        <div className="absolute top-0 -left-4 w-96 h-96 bg-primary rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-blob"></div>
-        <div className="absolute top-0 -right-4 w-96 h-96 bg-secondary rounded-full mix-blend-multiply filter blur-[128px] opacity-20 animate-blob animation-delay-2000"></div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight">
-            Innovating for the <br />
-            <span className="text-gradient">Digital Future</span>
-          </h1>
-          <p className="mt-4 text-xl text-gray-400 max-w-3xl mx-auto mb-10 leading-relaxed">
-            We are a boutique consultancy and software development company providing turnkey IT solutions. From AI & IoT to integrated port systems, we untangle complex issues for your digital evolution.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <a href="#solutions" className="btn-modern px-8 py-4 uppercase tracking-wider text-sm">
-              Explore Solutions
-            </a>
-            <a href="#contact" className="btn-modern-outline px-8 py-4 uppercase tracking-wider text-sm">
-              Get in Touch
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* About Section */}
-      <section id="about" className="py-24 relative overflow-hidden">
-        <div className="absolute right-0 top-1/4 w-[600px] h-[600px] bg-secondary/10 rounded-full blur-[120px] -z-10"></div>
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="reveal w-full grid grid-cols-1 md:grid-cols-2 gap-8">
-              
-            <div className="glass-card p-10 rounded-3xl border border-white/10 relative overflow-hidden group hover:scale-[1.01] transition-transform duration-300 md:col-span-2">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/30 rounded-full blur-3xl animate-pulse"></div>
-              <h2 className="text-4xl font-extrabold mb-4 text-white drop-shadow-md">Who We Are</h2>
-              <div className="w-20 h-2 bg-gradient-to-r from-primary via-blue-500 to-secondary rounded-full mb-6"></div>
-              <p className="text-gray-200 text-lg leading-relaxed font-light">
-                Founded in 2019, <strong className="text-primary font-bold">XLARGI</strong> is a boutique digital transformation consultancy. We are innovators and thought leaders helping enterprises untangle complex digital evolution challenges with cutting-edge engineering solutions.
-              </p>
-            </div>
-
-            <div className="glass-card p-10 rounded-3xl border border-white/10 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 hover:border-secondary/50 h-full">
-              <div className="absolute inset-0 bg-gradient-to-br from-secondary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="absolute top-0 right-0 w-40 h-40 bg-secondary/20 rounded-full blur-3xl -mr-10 -mt-10 animate-blob"></div>
-              <h4 className="text-3xl font-bold mb-4 text-white flex items-center gap-4">
-                <span className="text-secondary text-4xl filter drop-shadow-lg">✦</span> Our Vision
-              </h4>
-              <p className="text-gray-300 text-lg italic pl-4 border-l-4 border-secondary/50">
-                "To catalyze the industrial revolution in ASEAN through seamless AI and IoT integration, driving sustainable growth and global competitiveness."
-              </p>
-            </div>
-
-            <div className="glass-card p-10 rounded-3xl border border-white/10 relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300 hover:border-green-500/50 h-full">
-              <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="absolute bottom-0 right-0 w-40 h-40 bg-green-500/20 rounded-full blur-3xl -mr-10 -mb-10 animate-blob animation-delay-2000"></div>
-              <h4 className="text-3xl font-bold mb-4 text-white flex items-center gap-4">
-                <span className="text-green-400 text-4xl filter drop-shadow-lg">◈</span> Our Mission
-              </h4>
-              <p className="text-gray-300 text-lg italic pl-4 border-l-4 border-green-500/50">
-                "To engineer robust, future-proof digital infrastructure. We deliver high-impact solutions that solve complex challenges and anticipate tomorrow's innovations."
-              </p>
-            </div>
-            
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Solution: ADDS Section */}
-      <section id="adds-feature" className="py-24 relative overflow-hidden bg-white/5 border-y border-white/5">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-secondary/5 skew-y-3 transform origin-bottom-left -z-10"></div>
-        <div className="absolute top-1/2 right-0 w-96 h-96 bg-primary/10 rounded-full blur-[100px] animate-pulse-slow"></div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-16 reveal">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest mb-4">
-              New Generation Technology
-            </div>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-              ADDS (Automatic Container Damage Detection)
-            </h2>
-            <p className="text-2xl text-gray-300 font-light italic max-w-3xl mx-auto mb-8">
-              "Where others glance, we see <span className="text-gradient font-bold not-italic">everything</span>."
-            </p>
-            <p className="text-gray-400 max-w-3xl mx-auto leading-relaxed">
-              Revolutionizing container damage detection through advanced AI. We turn every glance into insight, and every insight into action, delivering unprecedented accuracy across gate, quay, and rail operations.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20 reveal delay-100">
-            <div className="glass-card p-8 rounded-xl text-center relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-primary/20 rounded-full blur-xl -mr-10 -mt-10 group-hover:bg-primary/30 transition-colors"></div>
-              <div className="text-4xl font-bold text-white mb-2">27 <span className="text-sm font-normal text-gray-400">sec</span></div>
-              <div className="text-primary text-sm font-bold uppercase tracking-wider mb-3">Avg Transaction Time</div>
-              <p className="text-gray-400 text-xs">Reduced from 45s manually. Automates 60% of total transactions.</p>
-            </div>
-            <div className="glass-card p-8 rounded-xl text-center relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-secondary/20 rounded-full blur-xl -mr-10 -mt-10 group-hover:bg-secondary/30 transition-colors"></div>
-              <div className="text-4xl font-bold text-white mb-2">+60%</div>
-              <div className="text-secondary text-sm font-bold uppercase tracking-wider mb-3">Gate Capacity</div>
-              <p className="text-gray-400 text-xs">Equivalent to +2,400 trucks. Pure, continuous precision 24/7.</p>
-            </div>
-            <div className="glass-card p-8 rounded-xl text-center relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/20 rounded-full blur-xl -mr-10 -mt-10 group-hover:bg-green-500/30 transition-colors"></div>
-              <div className="text-4xl font-bold text-white mb-2">100%</div>
-              <div className="text-green-400 text-sm font-bold uppercase tracking-wider mb-3">Digitized</div>
-              <p className="text-gray-400 text-xs">Every box condition recorded. Clear digital evidence eliminates disputes.</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center reveal delay-200">
-            <div>
-              <h3 className="text-2xl font-bold text-white mb-6">Deep Neural Network Architecture</h3>
-              <p className="text-gray-400 mb-8 leading-relaxed">
-                ADDS isn't just a scanner; it's a learning system custom-built to match your operational needs. It augments human decision-making, allowing your team to focus on complex decisions while it automatically handles routine inspections.
-              </p>
-              
-              <div className="space-y-6">
-                <div className="flex items-start">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mt-1 mr-4 shrink-0 border border-primary/20">
-                    <i className="fa-solid fa-brain"></i>
-                  </div>
-                  <div>
-                    <h4 className="text-white font-bold mb-1">New AI Model</h4>
-                    <p className="text-gray-400 text-sm">Enhanced AI-engine delivers unmatched accuracy and reliability in image-based detection.</p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary mt-1 mr-4 shrink-0 border border-secondary/20">
-                    <i className="fa-solid fa-sliders"></i>
-                  </div>
-                  <div>
-                    <h4 className="text-white font-bold mb-1">Refined Sensitivity</h4>
-                    <p className="text-gray-400 text-sm">Customizable scoring (0-100) per container side and damage type. You say, we set.</p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 mt-1 mr-4 shrink-0 border border-purple-500/20">
-                    <i className="fa-solid fa-network-wired"></i>
-                  </div>
-                  <div>
-                    <h4 className="text-white font-bold mb-1">Seamless Integration</h4>
-                    <p className="text-gray-400 text-sm">Integrates with OCR suite and Gate Operating Systems (GOS) for automated routing.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="glass-card p-8 rounded-2xl border border-white/10 relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent rounded-2xl pointer-events-none"></div>
-              <h4 className="text-lg font-bold text-white mb-6 flex items-center">
-                <i className="fa-solid fa-triangle-exclamation text-yellow-400 mr-3"></i> Detects New Damage Classes
-              </h4>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-3 bg-white/5 rounded-lg border border-white/5 flex items-center space-x-3">
-                  <i className="fa-solid fa-bullseye text-red-400"></i>
-                  <span className="text-gray-300 text-sm">Holes & Punctures</span>
-                </div>
-                <div className="p-3 bg-white/5 rounded-lg border border-white/5 flex items-center space-x-3">
-                  <i className="fa-solid fa-door-open text-orange-400"></i>
-                  <span className="text-gray-300 text-sm">Bent Door Bars</span>
-                </div>
-                <div className="p-3 bg-white/5 rounded-lg border border-white/5 flex items-center space-x-3">
-                  <i className="fa-solid fa-hand text-blue-400"></i>
-                  <span className="text-gray-300 text-sm">Damaged Handles</span>
-                </div>
-                <div className="p-3 bg-white/5 rounded-lg border border-white/5 flex items-center space-x-3">
-                  <i className="fa-solid fa-wind text-cyan-400"></i>
-                  <span className="text-gray-300 text-sm">Missing Air Covers</span>
-                </div>
-                <div className="p-3 bg-white/5 rounded-lg border border-white/5 flex items-center space-x-3">
-                  <i className="fa-solid fa-box text-purple-400"></i>
-                  <span className="text-gray-300 text-sm">Dents & Bulges</span>
-                </div>
-                <div className="p-3 bg-white/5 rounded-lg border border-white/5 flex items-center space-x-3">
-                  <i className="fa-solid fa-eraser text-pink-400"></i>
-                  <span className="text-gray-300 text-sm">Rust & Scratches</span>
-                </div>
-              </div>
-
-              <div className="mt-8 pt-6 border-t border-white/10">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs font-bold text-gray-500 uppercase">Detection Score Example</span>
-                  <span className="text-xs font-bold text-red-400">97/100 (CRITICAL)</span>
-                </div>
-                <div className="w-full bg-gray-700 rounded-full h-2">
-                  <div className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full" style={{ width: '97%' }}></div>
-                </div>
-                <p className="text-xs text-gray-500 mt-2">Automatic alert sent to operator. Gate entry denied.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Automation Solutions */}
-      <section id="solutions" className="py-24 relative overflow-hidden bg-dark-lighter">
-        <div className="absolute top-1/2 left-0 w-64 h-64 bg-secondary/20 rounded-full blur-[100px]"></div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-16 reveal">
-            <h2 className="text-4xl font-bold mb-4">Automation Solutions</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">End-to-end automation for modern terminals. From gate to quay, we digitize every movement.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="glass-card p-8 rounded-xl reveal group border-t-4 border-t-blue-500">
-              <div className="w-14 h-14 bg-blue-500/20 rounded-lg flex items-center justify-center mb-6 text-blue-400 group-hover:scale-110 transition-transform duration-300">
-                <i className="fa-solid fa-truck text-2xl"></i>
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">Truck OCR Portal</h3>
-              <ul className="text-sm text-gray-400 space-y-2 mb-4">
-                <li><i className="fa-solid fa-check text-blue-500 mr-2"></i> Modern Gate Automation</li>
-                <li><i className="fa-solid fa-check text-blue-500 mr-2"></i> AI-based Trailer OCR</li>
-                <li><i className="fa-solid fa-check text-blue-500 mr-2"></i> License Plate Recognition</li>
-              </ul>
-              <p className="text-xs text-gray-500 italic">Achieve shorter truck turnaround times with automated access validation.</p>
-            </div>
-
-            <div className="glass-card p-8 rounded-xl reveal delay-100 group border-t-4 border-t-purple-500">
-              <div className="w-14 h-14 bg-purple-500/20 rounded-lg flex items-center justify-center mb-6 text-purple-400 group-hover:scale-110 transition-transform duration-300">
-                <i className="fa-solid fa-train text-2xl"></i>
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">Train OCR Portal</h3>
-              <ul className="text-sm text-gray-400 space-y-2 mb-4">
-                <li><i className="fa-solid fa-check text-purple-500 mr-2"></i> Automated Rail Imaging</li>
-                <li><i className="fa-solid fa-check text-purple-500 mr-2"></i> High Accuracy (97-99.5%)</li>
-                <li><i className="fa-solid fa-check text-purple-500 mr-2"></i> Safety from Office</li>
-              </ul>
-              <p className="text-xs text-gray-500 italic">Move inspection tasks from trackside to office, automating manifest validation.</p>
-            </div>
-
-            <div className="glass-card p-8 rounded-xl reveal delay-200 group border-t-4 border-t-cyan-500">
-              <div className="w-14 h-14 bg-cyan-500/20 rounded-lg flex items-center justify-center mb-6 text-cyan-400 group-hover:scale-110 transition-transform duration-300">
-                <i className="fa-solid fa-ship text-2xl"></i>
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">Quay & Crane OCR</h3>
-              <ul className="text-sm text-gray-400 space-y-2 mb-4">
-                <li><i className="fa-solid fa-check text-cyan-500 mr-2"></i> Crane OCR</li>
-                <li><i className="fa-solid fa-check text-cyan-500 mr-2"></i> TopView Spreader OCR</li>
-                <li><i className="fa-solid fa-check text-cyan-500 mr-2"></i> Prevents False Lifts</li>
-              </ul>
-              <p className="text-xs text-gray-500 italic">Digitize discharge & loading operations with "unmanned" crane environments.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Services & Expertise Section */}
-      <section id="expert-services" className="py-24 relative overflow-hidden bg-white/5 border-y border-white/5">
-        <div className="absolute inset-0 bg-gradient-to-l from-primary/5 to-transparent"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-16 reveal">
-            <h2 className="text-4xl font-bold mb-4">Services & Expertise</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">Beyond hardware, we provide the intelligence and support to drive your digital transformation.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="glass-card p-10 rounded-xl reveal group border-l-4 border-green-500">
-              <div className="flex items-center mb-6">
-                <div className="w-14 h-14 bg-green-500/20 rounded-lg flex items-center justify-center mr-6 text-green-400 group-hover:scale-110 transition-transform duration-300">
-                  <i className="fa-solid fa-handshake-angle text-2xl"></i>
-                </div>
-                <h3 className="text-2xl font-bold text-white">Professional Services</h3>
-              </div>
-              
-              <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                As a delivery partner, we are fully equipped to deliver the entire solution – beginning from consultation, design & customization, implementation, all the way to solution evaluation. We ease your mind and streamline implementation & operations.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex items-center text-sm text-gray-300">
-                  <i className="fa-solid fa-check-circle text-green-500 mr-3"></i> App Software Development
-                </div>
-                <div className="flex items-center text-sm text-gray-300">
-                  <i className="fa-solid fa-check-circle text-green-500 mr-3"></i> Cloud Solution Implementation
-                </div>
-                <div className="flex items-center text-sm text-gray-300">
-                  <i className="fa-solid fa-check-circle text-green-500 mr-3"></i> Site Preparation
-                </div>
-                <div className="flex items-center text-sm text-gray-300">
-                  <i className="fa-solid fa-check-circle text-green-500 mr-3"></i> Outsourcing
-                </div>
-                <div className="flex items-center text-sm text-gray-300">
-                  <i className="fa-solid fa-check-circle text-green-500 mr-3"></i> Disaster Recovery Center (DRC)
-                </div>
-                <div className="flex items-center text-sm text-gray-300">
-                  <i className="fa-solid fa-check-circle text-green-500 mr-3"></i> Managed Services
-                </div>
-              </div>
-            </div>
-
-            <div className="glass-card p-10 rounded-xl reveal delay-100 group border-l-4 border-yellow-500">
-              <div className="flex items-center mb-6">
-                <div className="w-14 h-14 bg-yellow-500/20 rounded-lg flex items-center justify-center mr-6 text-yellow-400 group-hover:scale-110 transition-transform duration-300">
-                  <i className="fa-solid fa-brain text-2xl"></i>
-                </div>
-                <h3 className="text-2xl font-bold text-white">Data Science & AI</h3>
-              </div>
-              <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                Unlock the hidden value in your operational data. Our cognitive computing solutions help you move from reactive to predictive operations.
-              </p>
-              <ul className="space-y-4">
-                <li className="flex items-start text-gray-300">
-                  <i className="fa-solid fa-project-diagram text-yellow-500 mt-1 mr-3"></i>
-                  <div>
-                    <strong className="text-white block">Machine Learning</strong>
-                    <span className="text-sm">Algorithms that learn from your data to optimize routes and resource allocation.</span>
-                  </div>
-                </li>
-                <li className="flex items-start text-gray-300">
-                  <i className="fa-solid fa-chart-line text-yellow-500 mt-1 mr-3"></i>
-                  <div>
-                    <strong className="text-white block">Big Data Analytics</strong>
-                    <span className="text-sm">Process massive datasets to derive crucial business insights in real-time.</span>
-                  </div>
-                </li>
-                <li className="flex items-start text-gray-300">
-                  <i className="fa-solid fa-robot text-yellow-500 mt-1 mr-3"></i>
-                  <div>
-                    <strong className="text-white block">Cognitive Computing</strong>
-                    <span className="text-sm">Simulating human thought processes to automate complex decision making.</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Port Management Systems */}
-      <section id="port-management" className="py-24 relative overflow-hidden bg-white/5 border-y border-white/5">
-        <div className="absolute inset-0 bg-gradient-to-r from-secondary/10 to-primary/10 -z-10"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-16 reveal">
-            <h2 className="text-4xl font-bold mb-4">Integrated Port Systems</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">Comprehensive software suites for terminal operations, billing, and management.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="glass-card p-6 rounded-lg reveal hover:border-primary/50">
-              <div className="flex items-center mb-4">
-                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center mr-3 text-primary">
-                  <i className="fa-solid fa-desktop"></i>
-                </div>
-                <h3 className="text-lg font-bold text-white">CTOS</h3>
-              </div>
-              <p className="text-sm text-gray-400">Container Terminal Operation System. Managing discharging, loading, and yard operations with precision.</p>
-            </div>
-
-            <div className="glass-card p-6 rounded-lg reveal delay-100 hover:border-secondary/50">
-              <div className="flex items-center mb-4">
-                <div className="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center mr-3 text-secondary">
-                  <i className="fa-solid fa-network-wired"></i>
-                </div>
-                <h3 className="text-lg font-bold text-white">MTOS</h3>
-              </div>
-              <p className="text-sm text-gray-400">Multi Terminal Operation System. Unified control across varied terminal types and locations.</p>
-            </div>
-
-            <div className="glass-card p-6 rounded-lg reveal delay-200 hover:border-green-500/50">
-              <div className="flex items-center mb-4">
-                <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center mr-3 text-green-400">
-                  <i className="fa-solid fa-globe"></i>
-                </div>
-                <h3 className="text-lg font-bold text-white">Integrated Port Management</h3>
-              </div>
-              <p className="text-sm text-gray-400">Integrated Sea Port Management System. A complete Port ERP solution for modern administration.</p>
-            </div>
-
-            <div className="glass-card p-6 rounded-lg reveal hover:border-yellow-500/50">
-              <div className="flex items-center mb-4">
-                <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center mr-3 text-yellow-400">
-                  <i className="fa-solid fa-calendar-check"></i>
-                </div>
-                <h3 className="text-lg font-bold text-white">VBS / Troboss</h3>
-              </div>
-              <p className="text-sm text-gray-400">Vehicle & Truck Online Booking System. Streamline gate flow by scheduling truck arrivals.</p>
-            </div>
-
-            <div className="glass-card p-6 rounded-lg reveal delay-100 hover:border-purple-500/50">
-              <div className="flex items-center mb-4">
-                <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center mr-3 text-purple-400">
-                  <i className="fa-solid fa-wifi"></i>
-                </div>
-                <h3 className="text-lg font-bold text-white">Cyber City</h3>
-              </div>
-              <p className="text-sm text-gray-400">Cyber City Connectivity & Fiber Optic Solutions. Robust infrastructure for connected ports.</p>
-            </div>
-
-            <div className="glass-card p-6 rounded-lg reveal delay-200 hover:border-red-500/50">
-              <div className="flex items-center mb-4">
-                <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center mr-3 text-red-400">
-                  <i className="fa-solid fa-file-invoice-dollar"></i>
-                </div>
-                <h3 className="text-lg font-bold text-white">Billing & CFS</h3>
-              </div>
-              <p className="text-sm text-gray-400">CTOS/MTOS Billing Systems & Cargo Freight Station management for streamlined financials.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Case Study Section */}
-      <section id="case-study" className="py-24 relative overflow-hidden bg-gradient-to-b from-dark to-dark-lighter">
-        <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/80 to-transparent"></div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="flex flex-col md:flex-row gap-12 items-center">
-            <div className="md:w-1/2 reveal">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold uppercase tracking-widest mb-4">
-                Success Story
-              </div>
-              <h2 className="text-4xl font-bold mb-6 text-white">Wharf Optimization at <span class="text-primary">European Port</span></h2>
-              <p className="text-gray-300 text-lg mb-6 italic">
-                "The new automated process has significantly enhanced safety by minimizing human presence in high-risk areas."
-              </p>
-              <p className="text-gray-400 mb-8 leading-relaxed">
-                A major European port faced safety challenges with manual container registration under active cranes. By implementing our Wharf Optimization System—including Crane & Spreader OCR—they achieved fully unmanned operations at the quay.
-              </p>
-              <div className="grid grid-cols-2 gap-6 mb-8">
-                <div className="p-4 bg-white/5 rounded-lg border-l-4 border-primary backdrop-blur-sm">
-                  <div className="text-2xl font-bold text-white mb-1">99%</div>
-                  <div className="text-xs text-gray-400 uppercase">OCR Hit Rate</div>
-                </div>
-                <div className="p-4 bg-white/5 rounded-lg border-l-4 border-secondary backdrop-blur-sm">
-                  <div className="text-2xl font-bold text-white mb-1">Safety</div>
-                  <div className="text-xs text-gray-400 uppercase">Minimised Risk</div>
-                </div>
-              </div>
-            </div>
-            <div className="md:w-1/2 reveal delay-100">
-              <div className="glass-card p-8 rounded-2xl relative">
-                <h3 className="text-xl font-bold text-white mb-4">The Solution Deployed</h3>
-                <ul className="space-y-4">
-                  <li className="flex items-start text-gray-300">
-                    <i className="fa-solid fa-check-circle text-primary mt-1 mr-3"></i>
-                    <div>
-                      <strong className="text-white block">Crane OCR</strong>
-                      <span className="text-sm">Captures IDs, seals, and door direction during flight path.</span>
-                    </div>
-                  </li>
-                  <li className="flex items-start text-gray-300">
-                    <i className="fa-solid fa-check-circle text-primary mt-1 mr-3"></i>
-                    <div>
-                      <strong className="text-white block">TopView</strong>
-                      <span className="text-sm">Spreader OCR for early ID verification from container roof.</span>
-                    </div>
-                  </li>
-                  <li className="flex items-start text-gray-300">
-                    <i className="fa-solid fa-check-circle text-primary mt-1 mr-3"></i>
-                    <div>
-                      <strong className="text-white block">Smart Apps</strong>
-                      <span className="text-sm">Wharf App & Pinning App for digitized stevedore instructions.</span>
-                    </div>
-                  </li>
-                </ul>
-                <div className="mt-8 pt-6 border-t border-white/10 text-right">
-                  <span className="block text-xs text-gray-500 mb-1">Project Impact</span>
-                  <span className="text-lg font-bold text-white">Full Transparency & Safety</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact Section - Redesigned as requested */}
-      <section id="contact" className="py-24 relative overflow-hidden bg-dark-lighter">
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-primary/10 to-secondary/10 rounded-full blur-[100px] -z-10"></div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-16 reveal">
-            <h2 className="text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Contact Us</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">Ready to start your digital transformation? Get in touch with our experts today.</p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            
-            {/* Contact Info Card */}
-            <div className="glass-card p-10 rounded-3xl border border-white/10 relative overflow-hidden reveal group hover:border-primary/50 transition-all duration-300">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl -mr-10 -mt-10"></div>
-              
-              <h3 className="text-2xl font-bold text-white mb-8">Get In Touch</h3>
-              
-              <div className="space-y-8">
-                <div className="flex items-start group/item">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary text-xl mr-5 group-hover/item:bg-primary group-hover/item:text-black transition-all duration-300">
-                    <i className="fa-solid fa-location-dot"></i>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-white text-lg mb-1">Visit Us</h4>
-                    <p className="text-gray-400 leading-relaxed">
-                      15-1 (First Floor), Jalan SS 21/37,<br />
-                      Damansara Utama,<br />
-                      47400 Petaling Jaya, Selangor, Malaysia.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start group/item">
-                  <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary text-xl mr-5 group-hover/item:bg-secondary group-hover/item:text-white transition-all duration-300">
-                    <i className="fa-solid fa-envelope"></i>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-white text-lg mb-1">Email Us</h4>
-                    <p className="text-gray-400">info@xlargi.com</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-12 pt-8 border-t border-white/10">
-                {/* Social media icons and text removed */}
-              </div>
-            </div>
-
-            {/* Contact Form */}
-            <div className="glass-card p-10 rounded-3xl border border-white/10 relative overflow-hidden reveal delay-100 bg-white/5">
-              <h3 className="text-2xl font-bold text-white mb-8">Send a Message</h3>
-              
-              <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); alert('Message sent! We will contact you shortly.'); }}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-400">Name</label>
-                    <input 
-                      type="text" 
-                      className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder-gray-600" 
-                      placeholder="John Doe" 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-400">Email</label>
-                    <input 
-                      type="email" 
-                      className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder-gray-600" 
-                      placeholder="john@example.com" 
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-400">Subject</label>
-                  <select className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none">
-                    <option className="bg-dark text-gray-400">Select a topic...</option>
-                    <option className="bg-dark">General Inquiry</option>
-                    <option className="bg-dark">Integrated Port Systems</option>
-                    <option className="bg-dark">Automation Solutions</option>
-                    <option className="bg-dark">Services & Expertise</option>
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-400">Message</label>
-                  <textarea 
-                    rows="4" 
-                    className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder-gray-600 resize-none" 
-                    placeholder="Tell us about your project..."
-                  ></textarea>
-                </div>
-
-                <button 
-                  type="submit" 
-                  className="w-full py-4 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-bold text-lg shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 transition-all duration-300"
-                >
-                  Send Message
-                </button>
-              </form>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-black py-12 border-t border-white/5 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center relative z-10">
-          <div className="mb-4 md:mb-0">
-            <span className="text-2xl font-bold tracking-tighter text-white">XLARGI<span className="text-primary">.</span></span>
-            <p className="text-gray-500 text-sm mt-2">© 2026 XLARGI SDN. BHD. All rights reserved.</p>
-          </div>
-          <div className="flex space-x-6 text-sm text-gray-500">
-            <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-          </div>
-        </div>
-      </footer>
+  return <dialog ref={dialog} className="contact-dialog" aria-labelledby="contact-title" onCancel={onClose} onClick={event => { if (event.target === dialog.current) onClose(); }}>
+    <div className="dialog-inner">
+      <button className="close-button" type="button" onClick={onClose} aria-label="Close contact form">×</button>
+      <p className="eyebrow">LET’S BUILD WHAT’S NEXT</p>
+      <h2 id="contact-title">Start a conversation.</h2>
+      <p className="dialog-intro">Tell us where you want to go. We’ll help you get there.</p>
+      {formState.succeeded ? <div className="contact-success" role="status"><h3>Message received.</h3><p>Thank you for getting in touch. We’ll be in touch soon.</p><button type="button" className="pill light" onClick={onClose}>Done <Arrow /></button></div> : <form action="https://formspree.io/f/mjyglvln" method="POST" onSubmit={submit} aria-busy={formState.submitting}>
+        <input type="text" name="_gotcha" tabIndex="-1" autoComplete="off" className="contact-honeypot" aria-hidden="true" />
+        <div className="form-row"><label>Your name<input name="name" autoComplete="name" required /></label><label>Work email<input type="email" name="email" autoComplete="email" required /></label></div>
+        <label>Company<input name="company" autoComplete="organization" /></label>
+        <label>What are you working on?<textarea name="message" rows="3" required /></label>
+        <div className="contact-errors" role="alert"><ValidationError field="name" prefix="Name" errors={formState.errors} /><ValidationError field="email" prefix="Email" errors={formState.errors} /><ValidationError field="message" prefix="Message" errors={formState.errors} /><ValidationError errors={formState.errors} /></div>
+        <button type="submit" className="pill light" disabled={formState.submitting}>{formState.submitting ? 'Sending…' : 'Message us'} <Arrow /></button>
+      </form>}
     </div>
-  );
-};
+  </dialog>;
+}
 
-export default App;
+export default function App() {
+  const [menu, setMenu] = useState(false);
+  const [contact, setContact] = useState(false);
+  const [active, setActive] = useState('home');
+  const progressRef = useRef(0);
+  const story = useRef(null);
+  useEffect(() => {
+    const onScroll = () => {
+      const element = story.current;
+      if (!element) return;
+      progressRef.current = Math.max(0, Math.min(1, -element.getBoundingClientRect().top / (element.offsetHeight - window.innerHeight)));
+    };
+    onScroll();
+    const initialAnchor = requestAnimationFrame(() => {
+      const target = document.getElementById(window.location.hash.slice(1));
+      if (target) target.scrollIntoView({ behavior: 'instant', block: 'start' });
+    });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => { if (entry.isIntersecting) setActive(entry.target.id); });
+    }, { rootMargin: '-25% 0px -45% 0px', threshold: 0 });
+    document.querySelectorAll('[data-section]').forEach(section => observer.observe(section));
+    const reveal = new IntersectionObserver(entries => entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('is-visible'); reveal.unobserve(entry.target); } }), { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(element => reveal.observe(element));
+    return () => { cancelAnimationFrame(initialAnchor); window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); observer.disconnect(); reveal.disconnect(); };
+  }, []);
+  useEffect(() => {
+    if (!menu) return;
+    const onKey = event => { if (event.key === 'Escape') setMenu(false); };
+    const oldOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = oldOverflow; window.removeEventListener('keydown', onKey); };
+  }, [menu]);
+
+  return <>
+    <a href="#main" className="skip-link">Skip to content</a>
+    <header className="site-header">
+      <a className="wordmark" href="#home" aria-label="XLARGI home" onClick={() => setMenu(false)}><img src="/xlargi-logo.svg" alt="XLARGI" width="558" height="111" /></a>
+      <nav className="chapter-nav" aria-label="Experience chapters">{chapters.map(chapter => <a key={chapter.id} href={`#${chapter.id}`} aria-current={active === chapter.id ? 'location' : undefined}><span className="nav-tick" />{chapter.label}</a>)}</nav>
+      <div className="header-actions"><button className="pill compact" onClick={() => setContact(true)}>Contact <Arrow /></button><button className={`menu-toggle ${menu ? 'open' : ''}`} aria-label={menu ? 'Close menu' : 'Open menu'} aria-expanded={menu} aria-controls="site-menu" onClick={() => setMenu(value => !value)}><span /><span /></button></div>
+    </header>
+    {menu && <nav id="site-menu" className="menu-panel" aria-label="Main navigation"><span className="eyebrow">EXPLORE XLARGI</span>{[...chapters, { id: 'solutions', label: 'Our solutions' }, { id: 'about', label: 'The company' }].map((item, i) => <a key={item.id} href={`#${item.id}`} onClick={() => setMenu(false)}><small>0{i + 1}</small>{item.label}<Arrow /></a>)}<button onClick={() => { setMenu(false); setContact(true); }}>Let’s talk <Arrow /></button></nav>}
+    <div className="story-scene"><ContainerScanner progressRef={progressRef} /></div>
+    <main id="main">
+      <div className="story" ref={story}>
+        <section id="home" className="story-chapter hero" data-section>
+          <div className="hero-top"><p className="eyebrow">ENGINEERED FOR THE REAL WORLD</p><h1>Moving industries<br />with connected<br />intelligence.</h1></div>
+          <div className="hero-bottom"><p>AI, automation, and integrated systems.<br className="desktop-break" /> Built to turn your most complex operations into your next advantage.</p><a href="#inspection" className="pill">Scroll to explore <Arrow down /></a></div>
+          <div className="hero-coordinate"><span className="status-dot" /> XLARGI / DIGITAL OPERATIONS<br /><span>03.1390° N &nbsp; 101.6869° E</span></div>
+        </section>
+        <section id="inspection" className="story-chapter" data-section>
+          <div className="chapter-copy reveal"><p className="eyebrow">01 / VISION INTELLIGENCE</p><h2>Every detail.<br />A clearer decision.</h2><p>AI-powered container inspection detects damage, records condition, and brings the right information to your operators.</p><a className="text-link" href="#solutions">Explore container inspection <Arrow /></a></div>
+          <aside className="telemetry detection-panel" aria-label="ADDS detection example">
+            <div className="detection-heading"><span className="detection-dot" /><h3>ADDS live detection</h3><span className="demo-badge">DEMO</span></div>
+            <dl className="detection-group"><div><dt>Container ID</dt><dd>MSKU 283753 5</dd></div><div><dt>Timestamp</dt><dd><time dateTime="2025-10-24T14:23:47">2025-10-24 14:23:47</time></dd></div></dl>
+            <dl className="detection-group"><div><dt>Damage class</dt><dd>Hole</dd></div><div><dt>Location</dt><dd>Roof</dd></div><div><dt>Score</dt><dd>20</dd></div></dl>
+            <dl className="detection-group"><div><dt>Damage class</dt><dd>Rust</dd></div><div><dt>Location</dt><dd>Left side</dd></div><div><dt>Score</dt><dd>15</dd></div></dl>
+            <dl className="detection-group detection-total"><div><dt>Total damage score</dt><dd>20/100</dd></div><div><dt>Status</dt><dd>Inspection Required</dd></div></dl>
+            <ul className="detection-checks"><li>Images stored for claim management</li><li>Searchable by different identifiers</li></ul>
+            <p className="telemetry-note">Illustrative detection data · no live feed</p>
+          </aside>
+        </section>
+        <section id="automation" className="story-chapter" data-section>
+          <div className="chapter-copy reveal"><p className="eyebrow">02 / CONNECTED OPERATIONS</p><h2>One movement.<br />Everything in sync.</h2><p>Connect gate, rail, and quay operations with OCR, automated identification, and systems that work together.</p><a className="text-link" href="#solutions">Discover terminal automation <Arrow /></a></div>
+          <div className="system-map"><span>GATE</span><i /><span>YARD</span><i /><span>QUAY</span><p>CONNECTED BY DESIGN</p></div>
+        </section>
+        <section id="intelligence" className="story-chapter" data-section>
+          <div className="chapter-copy reveal"><p className="eyebrow">03 / DATA INTO ACTION</p><h2>See the whole.<br />Act on what matters.</h2><p>From data science to purpose-built software, we connect the physical and digital worlds to help your teams make better decisions.</p><a className="text-link" href="#expertise">Explore our expertise <Arrow /></a></div>
+          <div className="scene-label"><span className="status-dot" /> INTELLIGENCE / INTEGRATION / IMPACT</div>
+        </section>
+      </div>
+      <section id="solutions" className="solutions section-pad" data-section>
+        <div className="section-heading reveal"><p className="eyebrow">BUILT AROUND YOUR OPERATIONS</p><h2>One partner.<br />Many possibilities.</h2><p>Intelligence at every point of your terminal.<br />Expertise across every stage of your transformation.</p></div>
+        <div className="solution-grid">
+          <a href="#expertise" className="solution-card reveal"><div className="solution-art portal-art"><div className="portal-drawing"><i /><i /><i /></div><span className="art-cross cross-one">+</span><span className="art-cross cross-two">+</span><span className="art-label">VISION / CAPTURE / ANALYSE</span><span className="card-number">01</span></div><div className="card-title"><h3>Container intelligence</h3><Arrow /></div><p>Automatic damage detection, multi-angle imaging, and a digital record of container condition.</p><div className="card-tags">CONTAINER INSPECTION <span>OCR</span></div></a>
+          <a href="#expertise" className="solution-card reveal"><div className="solution-art terminal-art"><div className="container-lines">{Array.from({length: 9}, (_, i) => <i key={i} />)}</div><div className="terminal-crane" /><span className="art-cross cross-one">+</span><span className="art-label">GATE / RAIL / QUAY</span><span className="card-number">02</span></div><div className="card-title"><h3>Terminal automation</h3><Arrow /></div><p>Truck and train OCR portals, crane identification, and integrated gate operating systems.</p><div className="card-tags">AUTOMATION <span>INTEGRATION</span></div></a>
+          <a href="#expertise" className="solution-card reveal"><div className="solution-art intelligence-art"><div className="orbital orbital-one" /><div className="orbital orbital-two" /><div className="orbital orbital-three" /><div className="core-node" /><span className="art-cross cross-one">+</span><span className="art-label">DATA / SOFTWARE / SYSTEMS</span><span className="card-number">03</span></div><div className="card-title"><h3>Digital transformation</h3><Arrow /></div><p>Custom software, cloud implementation, data science, and managed services built for your business.</p><div className="card-tags">AI & DATA <span>CLOUD</span></div></a>
+        </div>
+      </section>
+      <section id="about" className="about-section section-pad" data-section>
+        <p className="eyebrow reveal">XLARGI / EST. 2019 / MALAYSIA</p><h2 className="manifesto reveal">Complex challenges.<br /><span>Clear thinking.</span><br />Real-world impact.</h2>
+        <div className="about-bottom reveal"><NeuralGraphic /><div><p>We are a boutique consultancy and software development company helping enterprises untangle complex digital challenges.</p><p>From AI and IoT to integrated port systems, we bring engineering, strategy, and delivery together. Designed for your operation. Built for what comes next.</p><button className="pill" onClick={() => setContact(true)}>Meet your next partner <Arrow /></button></div></div>
+      </section>
+      <section id="expertise" className="expertise-section section-pad" data-section><div className="expertise-intro reveal"><p className="eyebrow">FROM FIRST CONVERSATION TO DAILY OPERATION</p><h2>We see it<br />through.</h2><p>One delivery partner for consultation, design, implementation, and ongoing support.</p></div><div className="expertise-list">{[
+        ['01', 'Consult & design', 'Understand the challenge. Define the right architecture. Design around your business.'],
+        ['02', 'Build & integrate', 'Purpose-built applications, AI models, and connected systems that fit your operations.'],
+        ['03', 'Deploy & support', 'Site preparation, cloud implementation, managed services, and continuous improvement.'],
+      ].map(([num, title, body]) => <details className="expertise-item reveal" key={num}><summary><span>{num}</span><h3>{title}</h3><b>+</b></summary><p>{body}</p></details>)}</div></section>
+      <section className="contact-section section-pad" id="contact" data-section><p className="eyebrow reveal">YOUR NEXT CHAPTER STARTS HERE</p><h2 className="reveal">Ready to move<br />things forward?</h2><button className="pill light reveal" onClick={() => setContact(true)}>Talk to XLARGI <Arrow /></button></section>
+    </main>
+    <footer className="site-footer"><a className="wordmark" href="#home"><img src="/xlargi-logo.svg" alt="XLARGI" width="558" height="111" /></a><span>© {new Date().getFullYear()} XLARGI SDN. BHD.</span><a href="#home">Back to top ↑</a><span className="footer-note">Intelligence. Engineered.</span></footer>
+    {contact && <ContactDialog onClose={() => setContact(false)} />}
+  </>;
+}
